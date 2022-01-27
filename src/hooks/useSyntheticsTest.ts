@@ -24,27 +24,31 @@ THE SOFTWARE.
 
 import { useCallback, useState } from "react";
 import { getCodeForResult, getCodeFromActions } from "../common/shared";
-import { ActionContext, Result } from "../common/types";
+import { ActionContext, Result, TestEvent } from "../common/types";
 
 const { ipcRenderer: ipc } = window.require("electron-better-ipc");
 
 export function useSyntheticsTest(actions: ActionContext[][]) {
   const [result, setResult] = useState<Result | undefined>(undefined);
   const [codeBlocks, setCodeBlocks] = useState("");
-
+  const onTestEvent = (ev: TestEvent) => {
+    console.log(ev);
+  };
   const onTest = useCallback(
     async function () {
       /**
        * For the time being we are only running tests as inline.
        */
       const code = await getCodeFromActions(actions, "inline");
+      ipc.on("test-event", onTestEvent);
+      console.log("!!listener added");
       const resultFromServer: Result = await ipc.callMain("run-journey", {
         code,
         isSuite: false,
       });
-
-      setCodeBlocks(await getCodeForResult(actions, result?.journey));
-      setResult(resultFromServer);
+      ipc.removeListener("test-event", onTestEvent);
+      // setCodeBlocks(await getCodeForResult(actions, result?.journey));
+      // setResult(resultFromServer);
     },
     [actions, result]
   );
