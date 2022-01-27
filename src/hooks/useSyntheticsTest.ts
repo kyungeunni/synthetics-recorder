@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+import { IpcRendererEvent } from "electron";
 import { useCallback, useState } from "react";
 import { getCodeForResult, getCodeFromActions } from "../common/shared";
 import { ActionContext, Result, TestEvent } from "../common/types";
@@ -31,8 +32,9 @@ const { ipcRenderer: ipc } = window.require("electron-better-ipc");
 export function useSyntheticsTest(actions: ActionContext[][]) {
   const [result, setResult] = useState<Result | undefined>(undefined);
   const [codeBlocks, setCodeBlocks] = useState("");
-  const onTestEvent = (ev: TestEvent) => {
-    console.log(ev);
+  const onTestEvent = (_event: IpcRendererEvent, data: TestEvent) => {
+    //TODO: display the data
+    console.log(data);
   };
   const onTest = useCallback(
     async function () {
@@ -41,7 +43,6 @@ export function useSyntheticsTest(actions: ActionContext[][]) {
        */
       const code = await getCodeFromActions(actions, "inline");
       ipc.on("test-event", onTestEvent);
-      console.log("!!listener added");
       const resultFromServer: Result = await ipc.callMain("run-journey", {
         code,
         isSuite: false,
