@@ -36,7 +36,9 @@ interface ISettingsPopover {
   onDelete: () => void;
   onSoftDelete: () => void;
   onEdit: () => void;
+  onToggleBreakpoint: () => void;
   setIsOpen: Setter<boolean>;
+  breakpointEnabled?: boolean;
 }
 
 function createDeleteButton(
@@ -69,6 +71,8 @@ export function SettingsPopover({
   onDelete,
   onSoftDelete,
   onEdit,
+  onToggleBreakpoint,
+  breakpointEnabled,
 }: ISettingsPopover) {
   return (
     <EuiPopover
@@ -90,6 +94,11 @@ export function SettingsPopover({
           {
             id: 0,
             items: [
+              {
+                icon: 'dot',
+                name: `${breakpointEnabled ? 'Remove' : 'Add'} Breakpoint`,
+                onClick: onToggleBreakpoint,
+              },
               {
                 icon: 'plusInCircle',
                 name: 'Add assertion',

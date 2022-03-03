@@ -67,7 +67,7 @@ export default function App() {
 
   const { electronAPI } = useContext(CommunicationContext);
   const stepsContextUtils = useStepsContext();
-  const { steps, setSteps } = stepsContextUtils;
+  const { steps, setSteps, breakpoints } = stepsContextUtils;
   const syntheticsTestUtils = useSyntheticsTest(steps);
   const recordingContextUtils = useRecordingContext(
     electronAPI,
@@ -127,6 +127,7 @@ export default function App() {
                           index={index}
                           key={`step-separator-${index + 1}`}
                           step={step}
+                          breakpoints={breakpoints}
                         />
                       ))}
                       <TestResult />

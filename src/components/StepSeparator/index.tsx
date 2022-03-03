@@ -34,9 +34,10 @@ import { StepSeparatorAccordion } from './styles';
 interface IStepSeparator {
   index: number;
   step: Step;
+  breakpoints: Set<string>;
 }
 
-export function StepSeparator({ index, step }: IStepSeparator) {
+export function StepSeparator({ index, step, breakpoints }: IStepSeparator) {
   const testStatus = useStepResultStatus(
     step.actions.length ? step.actions[0].title : undefined,
     step.name
@@ -73,6 +74,7 @@ export function StepSeparator({ index, step }: IStepSeparator) {
             stepIndex={index}
             testStatus={testStatus}
             isLast={actionIndex === step.actions.length - 1}
+            breakpointEnabled={breakpoints.has(`${index}:${actionIndex}`)}
           />
         ))}
       </StepSeparatorAccordion>

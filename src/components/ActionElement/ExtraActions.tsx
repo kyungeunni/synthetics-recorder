@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiIcon } from '@elastic/eui';
 import React, { useContext, useState } from 'react';
 import { RecordingStatus } from '../../common/types';
 import { ActionContext } from '../../../common/types';
@@ -39,6 +39,7 @@ interface IExtraActions {
   setIsOpen: (isOpen: boolean) => void;
   actionContext: ActionContext;
   stepIndex: number;
+  breakpointEnabled?: boolean;
 }
 
 export function ExtraActions({
@@ -48,9 +49,11 @@ export function ExtraActions({
   setIsOpen,
   actionContext,
   stepIndex,
+  breakpointEnabled,
 }: IExtraActions) {
   const [isSettingsPopoverOpen, setIsSettingsPopoverOpen] = useState(false);
-  const { onDeleteAction, onSoftDeleteAction, onInsertAction } = useContext(StepsContext);
+  const { onDeleteAction, onSoftDeleteAction, onInsertAction, onToggleBreakpoint } =
+    useContext(StepsContext);
   const { recordingStatus } = useContext(RecordingContext);
   const settingsHandler = (handler: () => void) => {
     return function () {
@@ -66,7 +69,8 @@ export function ExtraActions({
   return (
     <EuiFlexGroup alignItems="center" gutterSize="xs" justifyContent="spaceBetween">
       <EuiFlexItem>
-        <HeadingText actionContext={actionContext} />
+        {breakpointEnabled ? <EuiIcon aria-label="breakpoint" type="annotation" color="red" /> : ''}
+        <HeadingText actionContext={step} />
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
         <ActionControlButton
@@ -109,8 +113,12 @@ export function ExtraActions({
           onSoftDelete={settingsHandler(() => {
             onSoftDeleteAction(stepIndex, actionIndex);
           })}
+          onToggleBreakpoint={settingsHandler(() => {
+            onToggleBreakpoint(stepIndex, actionIndex);
+          })}
           isOpen={isSettingsPopoverOpen}
           setIsOpen={setIsSettingsPopoverOpen}
+          breakpointEnabled={breakpointEnabled}
         />
       </EuiFlexItem>
     </EuiFlexGroup>

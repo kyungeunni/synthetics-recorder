@@ -85,6 +85,7 @@ interface IActionElement {
   isLast?: boolean;
   stepIndex: number;
   testStatus?: ResultCategory;
+  breakpointEnabled?: boolean;
 }
 
 function ActionComponent({
@@ -94,6 +95,7 @@ function ActionComponent({
   actionContext,
   stepIndex,
   testStatus,
+  breakpointEnabled,
 }: IActionElement) {
   const { onDeleteAction, onUpdateAction, onSetActionIsOpen } = useContext(StepsContext);
   const isAssertion = actionContext.action.isAssert;
@@ -155,6 +157,7 @@ function ActionComponent({
               setIsOpen={setIsOpen}
               actionContext={actionContext}
               stepIndex={stepIndex}
+              breakpointEnabled={breakpointEnabled}
             />
           }
         >

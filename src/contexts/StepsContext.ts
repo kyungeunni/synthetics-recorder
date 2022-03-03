@@ -37,6 +37,10 @@ export interface IStepsContext {
    */
   steps: RecorderSteps;
   /**
+   * Track break points, format: stepIndex:actionIndex
+   */
+  breakpoints: Set<string>;
+  /**
    * Updates the steps.
    */
   setSteps: Setter<RecorderSteps>;
@@ -90,10 +94,12 @@ export interface IStepsContext {
    * Overwrites the step at `stepIndex` with `step`.
    */
   onStepDetailChange: (step: Step, stepIndex: number) => void;
+  onToggleBreakpoint: (stepIndex: number, actionIndex: number) => void;
 }
 
 export const StepsContext = createContext<IStepsContext>({
   steps: [],
+  breakpoints: new Set(),
   setSteps: notImplemented,
   setStepName: notImplemented,
   onDeleteAction: notImplemented,
@@ -107,4 +113,5 @@ export const StepsContext = createContext<IStepsContext>({
   onSplitStep: notImplemented,
   onStepDetailChange: notImplemented,
   onUpdateAction: notImplemented,
+  onToggleBreakpoint: notImplemented,
 });

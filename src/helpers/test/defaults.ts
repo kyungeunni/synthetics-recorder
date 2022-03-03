@@ -48,6 +48,7 @@ export const getUrlContextDefaults = (): IUrlContext => ({
 
 export const getStepsContextDefaults = (): IStepsContext => ({
   steps: [],
+  breakpoints: new Set(),
   setSteps: jest.fn(),
   setStepName: jest.fn(),
   onDeleteAction: jest.fn(),
@@ -61,6 +62,7 @@ export const getStepsContextDefaults = (): IStepsContext => ({
   onSplitStep: jest.fn(),
   onStepDetailChange: jest.fn(),
   onUpdateAction: jest.fn(),
+  onToggleBreakpoint: jest.fn(),
 });
 
 export const getTestContextDefaults = (): ITestContext => ({

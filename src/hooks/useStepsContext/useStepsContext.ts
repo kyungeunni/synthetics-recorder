@@ -30,6 +30,7 @@ import { onDropStep } from './onDropStep';
 
 export function useStepsContext(): IStepsContext {
   const [steps, setSteps] = useState<RecorderSteps>([]);
+  const [breakpoints, setBreakpoints] = useState<Set<string>>(new Set());
 
   const setStepName = useCallback((idx: number, name?: string) => {
     setSteps(oldSteps =>
@@ -53,6 +54,7 @@ export function useStepsContext(): IStepsContext {
 
   return {
     steps,
+    breakpoints,
     setSteps,
     setStepName,
     onDeleteAction: (targetStepIdx, indexToDelete) => {
@@ -198,6 +200,12 @@ export function useStepsContext(): IStepsContext {
         },
         stepIndex
       );
+    },
+    onToggleBreakpoint: (stepIndex: number, actionIndex: number) => {
+      const key = `${stepIndex}:${actionIndex}`;
+      const copySet = new Set([...breakpoints]);
+      copySet.has(key) ? copySet.delete(key) : copySet.add(key);
+      setBreakpoints(copySet);
     },
   };
 }
