@@ -58,9 +58,10 @@ export const StepSeparatorHeading = styled(EuiFlexItem)`
 interface IStepSeparator {
   index: number;
   step: Step;
+  breakpoints: Set<string>;
 }
 
-export function StepSeparator({ index, step }: IStepSeparator) {
+export function StepSeparator({ index, step, breakpoints }: IStepSeparator) {
   const testStatus = useStepResultStatus(
     step.length ? step[0].title : undefined
   );
@@ -79,16 +80,19 @@ export function StepSeparator({ index, step }: IStepSeparator) {
       id={`step-separator-${index}`}
       initialIsOpen
     >
-      {step.map((s, actionIndex) => (
-        <ActionElement
-          key={`action-${actionIndex}-for-step-${index}`}
-          step={s}
-          actionIndex={actionIndex}
-          stepIndex={index}
-          testStatus={testStatus}
-          isLast={actionIndex === step.length - 1}
-        />
-      ))}
+      {step.map((s, actionIndex) => {
+        return (
+          <ActionElement
+            key={`action-${actionIndex}-for-step-${index}`}
+            step={s}
+            actionIndex={actionIndex}
+            stepIndex={index}
+            testStatus={testStatus}
+            isLast={actionIndex === step.length - 1}
+            breakpointEnabled={breakpoints.has(`${index}:${actionIndex}`)}
+          />
+        );
+      })}
     </StepSeparatorAccordion>
   );
 }

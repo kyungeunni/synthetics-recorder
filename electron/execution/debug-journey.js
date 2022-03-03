@@ -21,34 +21,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-import { RecordingStatus } from "../../common/types";
-import { IRecordingContext } from "../../contexts/RecordingContext";
-import { IStepsContext } from "../../contexts/StepsContext";
-import { IUrlContext } from "../../contexts/UrlContext";
-
-export const getRecordingContextDefaults = (): IRecordingContext => ({
-  startOver: jest.fn(),
-  isStartOverModalVisible: false,
-  setIsStartOverModalVisible: jest.fn(),
-  recordingStatus: RecordingStatus.NotRecording,
-  togglePause: jest.fn(),
-  toggleRecording: jest.fn(),
-});
-
-export const getUrlContextDefaults = (): IUrlContext => ({
-  setUrl: jest.fn(),
-  url: "https://www.elastic.co",
-});
-
-export const getStepsContextDefaults = (): IStepsContext => ({
-  steps: [],
-  breakpoints: new Set(),
-  setSteps: jest.fn(),
-  onDeleteAction: jest.fn(),
-  onDeleteStep: jest.fn(),
-  onInsertAction: jest.fn(),
-  onStepDetailChange: jest.fn(),
-  onUpdateAction: jest.fn(),
-  onToggleBreakpoint: jest.fn(),
-});

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem, EuiIcon } from "@elastic/eui";
 import { ActionInContext } from "@elastic/synthetics";
 import React, { useContext, useState } from "react";
 import { RecordingStatus, Setter } from "../../common/types";
@@ -39,6 +39,7 @@ interface IExtraActions {
   setIsOpen: Setter<boolean>;
   step: ActionInContext;
   stepIndex: number;
+  breakpointEnabled?: boolean;
 }
 
 export function ExtraActions({
@@ -48,9 +49,11 @@ export function ExtraActions({
   setIsOpen,
   step,
   stepIndex,
+  breakpointEnabled,
 }: IExtraActions) {
   const [isSettingsPopoverOpen, setIsSettingsPopoverOpen] = useState(false);
-  const { onDeleteAction, onInsertAction } = useContext(StepsContext);
+  const { onDeleteAction, onInsertAction, onToggleBreakpoint } =
+    useContext(StepsContext);
   const { recordingStatus } = useContext(RecordingContext);
   const settingsHandler = (handler: () => void) => {
     return function () {
@@ -70,6 +73,11 @@ export function ExtraActions({
       justifyContent="spaceBetween"
     >
       <EuiFlexItem>
+        {breakpointEnabled ? (
+          <EuiIcon aria-label="breakpoint" type="annotation" color="red" />
+        ) : (
+          ""
+        )}
         <HeadingText actionContext={step} />
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
@@ -108,8 +116,12 @@ export function ExtraActions({
           onDelete={settingsHandler(() => {
             onDeleteAction(stepIndex, actionIndex);
           })}
+          onToggleBreakpoint={settingsHandler(() => {
+            onToggleBreakpoint(stepIndex, actionIndex);
+          })}
           isOpen={isSettingsPopoverOpen}
           setIsOpen={setIsSettingsPopoverOpen}
+          breakpointEnabled={breakpointEnabled}
         />
       </EuiFlexItem>
     </EuiFlexGroup>

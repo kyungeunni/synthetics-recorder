@@ -60,7 +60,7 @@ export default function App() {
 
   const { ipc } = useContext(CommunicationContext);
   const stepsContextUtils = useStepsContext();
-  const { steps, setSteps } = stepsContextUtils;
+  const { steps, setSteps, breakpoints } = stepsContextUtils;
   const recordingContextUtils = useRecordingContext(ipc, url, steps.length);
   const { isStartOverModalVisible, setIsStartOverModalVisible, startOver } =
     recordingContextUtils;
@@ -106,6 +106,7 @@ export default function App() {
                       index={index}
                       key={`step-separator-${index + 1}`}
                       step={step}
+                      breakpoints={breakpoints}
                     />
                   ))}
                   <TestResult />

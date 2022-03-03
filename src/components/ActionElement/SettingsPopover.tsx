@@ -34,7 +34,9 @@ interface ISettingsPopover {
   onAddAssertion: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  onToggleBreakpoint: () => void;
   setIsOpen: Setter<boolean>;
+  breakpointEnabled?: boolean;
 }
 
 export function SettingsPopover({
@@ -45,6 +47,8 @@ export function SettingsPopover({
   onAddAssertion,
   onDelete,
   onEdit,
+  onToggleBreakpoint,
+  breakpointEnabled,
 }: ISettingsPopover) {
   return (
     <EuiPopover
@@ -66,6 +70,11 @@ export function SettingsPopover({
           {
             id: 0,
             items: [
+              {
+                icon: "dot",
+                name: `${breakpointEnabled ? "Remove" : "Add"} Breakpoint`,
+                onClick: onToggleBreakpoint,
+              },
               {
                 icon: "plusInCircle",
                 name: "Add assertion",

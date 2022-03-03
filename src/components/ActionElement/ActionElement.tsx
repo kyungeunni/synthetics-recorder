@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiFlexGroup, EuiFlexItem, EuiAccordion } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem, EuiAccordion, EuiIcon } from "@elastic/eui";
 import { ActionInContext } from "@elastic/synthetics";
 import React, { useContext, useState } from "react";
 import styled from "styled-components";
@@ -43,6 +43,7 @@ interface IActionElement {
   step: ActionInContext;
   stepIndex: number;
   testStatus?: ResultCategory;
+  breakpointEnabled?: boolean;
 }
 
 const ActionAccordion = styled(EuiAccordion)`
@@ -64,6 +65,7 @@ function ActionComponent({
   step,
   stepIndex,
   testStatus,
+  breakpointEnabled,
 }: IActionElement) {
   const { onDeleteAction } = useContext(StepsContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -119,6 +121,7 @@ function ActionComponent({
               setIsOpen={setIsOpen}
               step={step}
               stepIndex={stepIndex}
+              breakpointEnabled={breakpointEnabled}
             />
           }
         >
