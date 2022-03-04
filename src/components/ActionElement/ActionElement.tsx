@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiFlexGroup, EuiFlexItem, EuiAccordion, EuiIcon } from "@elastic/eui";
+import { EuiFlexGroup, EuiFlexItem, EuiAccordion } from "@elastic/eui";
 import { ActionInContext } from "@elastic/synthetics";
 import React, { useContext, useState } from "react";
 import styled from "styled-components";

@@ -26,11 +26,13 @@ import { EuiFlexGroup, EuiFlexItem } from "@elastic/eui";
 import React, { useCallback, useContext } from "react";
 import styled from "styled-components";
 import { RecordingStatus, Setter } from "../../common/types";
+import { DebugContext } from "../../contexts/DebugContext";
 import { RecordingContext } from "../../contexts/RecordingContext";
 import { StepsContext } from "../../contexts/StepsContext";
 import { TestContext } from "../../contexts/TestContext";
 import { UrlContext } from "../../contexts/UrlContext";
 import { ControlButton } from "../ControlButton";
+import { DebugButton } from "../DebugButton";
 import { TestButton } from "../TestButton";
 import { RecordingStatusIndicator } from "./StatusIndicator";
 import { UrlField } from "./UrlField";
@@ -57,7 +59,7 @@ export function HeaderControls({ setIsCodeFlyoutVisible }: IHeaderControls) {
 
   const { url, setUrl } = useContext(UrlContext);
 
-  const { steps } = useContext(StepsContext);
+  const { steps, breakpoints } = useContext(StepsContext);
 
   const {
     isTestInProgress,
@@ -66,11 +68,28 @@ export function HeaderControls({ setIsCodeFlyoutVisible }: IHeaderControls) {
     setResult,
   } = useContext(TestContext);
 
+  const {
+    startDebug,
+    resumeDebug,
+    setIsDebugInProgress,
+    isDebugInProgress,
+    debugPaused,
+  } = useContext(DebugContext);
+
   const onTest = useCallback(() => {
     setResult(undefined);
     setIsTestInProgress(true);
     startTest();
   }, [setIsTestInProgress, setResult, startTest]);
+
+  const onDebug = useCallback(() => {
+    // setResult(undefined);
+    startDebug();
+  }, [setIsDebugInProgress, breakpoints, startDebug]);
+
+  const onResume = useCallback(() => {
+    resumeDebug();
+  }, [setIsDebugInProgress, breakpoints, resumeDebug]);
 
   return (
     <Header alignItems="center" gutterSize="m">
@@ -123,6 +142,16 @@ export function HeaderControls({ setIsCodeFlyoutVisible }: IHeaderControls) {
       <EuiFlexItem grow={false}>
         <EuiFlexGroup gutterSize="m">
           <TestButtonDivider>
+            <DebugButton
+              isDisabled={
+                isDebugInProgress ||
+                steps.length === 0 ||
+                recordingStatus === RecordingStatus.Recording
+              }
+              onDebug={onDebug}
+              onResume={onResume}
+              isPaused={debugPaused}
+            />
             <TestButton
               isDisabled={
                 isTestInProgress ||

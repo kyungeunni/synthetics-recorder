@@ -68,8 +68,159 @@ export interface IStepsContext {
   onToggleBreakpoint: (stepIndex: number, actionIndex: number) => void;
 }
 
+const example = [
+  [
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      committed: true,
+      action: {
+        name: "navigate",
+        url: "https://www.google.com/?gws_rd=ssl",
+        signals: [],
+      },
+      title: "Go to https://www.google.com/?gws_rd=ssl",
+    },
+  ],
+  [
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "click",
+        selector: 'button:has-text("I agree")',
+        signals: [
+          {
+            name: "navigation",
+            url: "https://www.google.com/?gws_rd=ssl",
+            isAsync: true,
+          },
+        ],
+        button: "left",
+        modifiers: 0,
+        clickCount: 1,
+      },
+      committed: true,
+      title: 'Click button:has-text("I agree")',
+    },
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "click",
+        selector: '[aria-label="Search"]',
+        signals: [],
+        button: "left",
+        modifiers: 0,
+        clickCount: 1,
+      },
+      committed: true,
+      title: 'Click [aria-label="Search"]',
+    },
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "fill",
+        selector: '[aria-label="Search"]',
+        signals: [],
+        text: "dss",
+      },
+      committed: true,
+      title: 'Fill [aria-label="Search"]',
+    },
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "press",
+        selector: '[aria-label="Search"]',
+        signals: [],
+        key: "a",
+        modifiers: 4,
+      },
+      committed: true,
+      title: "Press a with modifiers",
+    },
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "fill",
+        selector: '[aria-label="Search"]',
+        signals: [],
+        text: "weather",
+      },
+      committed: true,
+      title: 'Fill [aria-label="Search"]',
+    },
+  ],
+  [
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl: "https://www.google.com/?gws_rd=ssl",
+      action: {
+        name: "click",
+        selector:
+          "text=Thu - Lido di Ostia Levante, Ostia, Metropolitan City of Rome",
+        signals: [
+          {
+            name: "navigation",
+            url: "https://www.google.com/search?q=weather&source=hp&ei=wxMhYp78HuqFxc8PubWX0Aw&iflsig=AHkkrS4AAAAAYiEh08SeBYfSXzeGy-SvHB1YXGHPxJcO&oq=weather&gs_lcp=Cgdnd3Mtd2l6EAEYADIKCAAQgAQQRhCAAjIFCAAQgAQyCAgAEIAEEMkDMgUIABCSAzIFCAAQgAQyBQgAEIAEMgUIABCABDIFCAAQgAQyBQgAEIAEMgUIABCABDoLCC4QgAQQxwEQowI6CAguEIAEENQCOgsILhCABBDHARDRAzoFCC4QgAQ6DgguEIAEEMcBEKMCENQCOgsILhCABBDHARCvAToNCC4QgAQQxwEQowIQCjoOCC4QgAQQxwEQ0QMQ1AJQiAFY2Blg4yJoAXAAeACAAWqIAZcGkgEDOS4xmAEAoAEBsAEA&sclient=gws-wiz",
+          },
+          {
+            name: "navigation",
+            url: "https://www.google.com/search?q=weather&source=hp&ei=wxMhYp78HuqFxc8PubWX0Aw&iflsig=AHkkrS4AAAAAYiEh08SeBYfSXzeGy-SvHB1YXGHPxJcO&oq=weather&gs_lcp=Cgdnd3Mtd2l6EAEYADIKCAAQgAQQRhCAAjIFCAAQgAQyCAgAEIAEEMkDMgUIABCSAzIFCAAQgAQyBQgAEIAEMgUIABCABDIFCAAQgAQyBQgAEIAEMgUIABCABDoLCC4QgAQQxwEQowI6CAguEIAEENQCOgsILhCABBDHARDRAzoFCC4QgAQ6DgguEIAEEMcBEKMCENQCOgsILhCABBDHARCvAToNCC4QgAQQxwEQowIQCjoOCC4QgAQQxwEQ0QMQ1AJQiAFY2Blg4yJoAXAAeACAAWqIAZcGkgEDOS4xmAEAoAEBsAEA&sclient=gws-wiz",
+            isAsync: true,
+          },
+        ],
+        button: "left",
+        modifiers: 0,
+        clickCount: 1,
+      },
+      committed: true,
+      title:
+        "Click text=Thu - Lido di Ostia Levante, Ostia, Metropolitan City of Rome",
+    },
+    {
+      pageAlias: "page",
+      isMainFrame: true,
+      frameUrl:
+        "https://www.google.com/search?q=weather&source=hp&ei=wxMhYp78HuqFxc8PubWX0Aw&iflsig=AHkkrS4AAAAAYiEh08SeBYfSXzeGy-SvHB1YXGHPxJcO&oq=weather&gs_lcp=Cgdnd3Mtd2l6EAEYADIKCAAQgAQQRhCAAjIFCAAQgAQyCAgAEIAEEMkDMgUIABCSAzIFCAAQgAQyBQgAEIAEMgUIABCABDIFCAAQgAQyBQgAEIAEMgUIABCABDoLCC4QgAQQxwEQowI6CAguEIAEENQCOgsILhCABBDHARDRAzoFCC4QgAQ6DgguEIAEEMcBEKMCENQCOgsILhCABBDHARCvAToNCC4QgAQQxwEQowIQCjoOCC4QgAQQxwEQ0QMQ1AJQiAFY2Blg4yJoAXAAeACAAWqIAZcGkgEDOS4xmAEAoAEBsAEA&sclient=gws-wiz",
+      action: {
+        name: "click",
+        selector:
+          "text=National and Local Weather Radar, Daily Forecast, Hurricane ...",
+        signals: [
+          {
+            name: "navigation",
+            url: "https://weather.com/?Goto=Redirected",
+          },
+          {
+            name: "navigation",
+            url: "https://weather.com/?Goto=Redirected",
+            isAsync: true,
+          },
+        ],
+        button: "left",
+        modifiers: 0,
+        clickCount: 1,
+      },
+      title:
+        "Click text=National and Local Weather Radar, Daily Forecast, Hurricane ...",
+    },
+  ],
+];
+
 export const StepsContext = createContext<IStepsContext>({
-  steps: [],
+  steps: example as Steps, //[],
   breakpoints: new Set(),
   setSteps: notImplemented,
   onDeleteAction: notImplemented,
