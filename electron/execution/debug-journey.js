@@ -25,6 +25,8 @@ const { chromium } = require("playwright");
 const {
   SyntheticsGenerator,
 } = require("@elastic/synthetics/dist/formatter/javascript");
+
+const { expect, step } = require("@elastic/synthetics");
 const { EXECUTABLE_PATH } = require("../config");
 
 class JourneyDebugRunner {
@@ -46,28 +48,40 @@ class JourneyDebugRunner {
       return;
     }
     const { page } = await this.startSession();
+    console.log("breakpoints:", [...breakpoints]);
     for (const [stepIndex, step] of steps.entries()) {
       for (const [actionIndex, action] of step.entries()) {
         const key = stepIndex + ":" + actionIndex;
         console.log({ key });
         if (breakpoints.has(key)) {
-          console.log("has key");
           this.pausedIndex = key;
 
           return {
-            paused: { index: key },
+            finished: false,
+            paused: true,
+            pausedIndex: key,
           };
         }
-        await this.runAction(page, action);
+        try {
+          await this.runAction(page, action);
+        } catch (err) {
+          console.error(err);
+          this.closeBrowser().catch(_e => null);
+          throw err;
+        }
       }
     }
 
     await this.closeBrowser();
+    return {
+      finished: true,
+      paused: false,
+      pausedIndex: null,
+    };
   }
 
   async resume(steps, breakpoints) {
     console.log("this.pausedIndex", this.pausedIndex);
-    // TODO: below code doesn't get called.
     if (!this.session) {
       return;
     }
@@ -75,18 +89,15 @@ class JourneyDebugRunner {
     if (pStepIndex == null || pActionIndex == null) {
       return;
     }
-
-    for (const [step, stepIndex] of steps) {
+    const { page } = this.session;
+    await page.bringToFront();
+    for (const [stepIndex, step] of steps.entries()) {
       if (stepIndex < pStepIndex) {
         console.log("stepIndex:", stepIndex, "continued");
         continue;
       }
-      for (const [action, actionIndex] of step) {
-        if (
-          stepIndex === pStepIndex &&
-          actionIndex !== pActionIndex &&
-          actionIndex < pActionIndex
-        ) {
+      for (const [actionIndex, action] of step.entries()) {
+        if (actionIndex < pActionIndex) {
           console.log(
             "actionIndex, stepIndex: ",
             actionIndex,
@@ -95,26 +106,44 @@ class JourneyDebugRunner {
           );
           continue;
         }
+
         const key = stepIndex + ":" + actionIndex;
         if (this.pausedIndex !== key && breakpoints.has(key)) {
           this.pausedIndex = key;
           return {
-            paused: { index: key },
+            finished: false,
+            paused: true,
+            pausedIndex: key,
           };
         }
-        await this.runAction(this.session.page, action);
+
+        try {
+          await this.runAction(page, action);
+        } catch (err) {
+          console.error(err);
+          this.closeBrowser().catch(_e => null);
+          throw err;
+        }
       }
     }
+    await this.closeBrowser();
+    return {
+      finished: true,
+      paused: false,
+      pausedIndex: null,
+    };
   }
 
   async startSession() {
     const { browser, context } = await this.launchBrowser();
     const page = await context.newPage();
     this.page = page;
-    this.browser = browser;
-    this.context = context;
-    this.page = page;
-    return { page };
+    this.session = {
+      browser,
+      context,
+      page,
+    };
+    return { ...this.session };
   }
 
   resetSession() {
@@ -125,7 +154,6 @@ class JourneyDebugRunner {
     const browser = await chromium.launch({
       headless: false,
       executablePath: EXECUTABLE_PATH,
-      devtools: true,
     });
 
     const context = await browser.newContext();
@@ -144,7 +172,8 @@ class JourneyDebugRunner {
   }
 
   async closeBrowser() {
-    if (this._closingBrowser) return;
+    const { browser } = this.session;
+    if (!browser || this._closingBrowser) return;
     this._closingBrowser = true;
     await browser.close();
     this.resetSession();
@@ -155,9 +184,10 @@ class JourneyDebugRunner {
     const globals = ["module", "exports", "require", "global", "process"];
     const js = new Function(
       "page",
-      `return (async (${globals.join(",")}) => { ${code} })(page)`
+      "expect",
+      `return (async (${globals.join(",")}) => { ${code} })(page, expect)`
     );
-    await js(page);
+    await js(page, expect);
   }
 }
 

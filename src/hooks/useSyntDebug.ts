@@ -47,11 +47,8 @@ export function useSyntheticsDebug(
       });
       setIsDebugInProgress(true);
       const result = await promise;
-      if (result?.paused) {
-        setPausedIndex(result.paused.index);
-      } else {
-        setIsDebugInProgress(false);
-      }
+      console.log(result);
+      setPausedIndex(result && result.pausedIndex);
     } catch (e: unknown) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -61,22 +58,24 @@ export function useSyntheticsDebug(
   }, [ipc, isDebugInProgress, steps, breakpoints]);
 
   const resumeDebug = useCallback(async () => {
+    if (isDebugInProgress) {
+      return;
+    }
+
     try {
+      setIsDebugInProgress(true);
       const promise: any = ipc.callMain("resume-debug", {
         steps,
         breakpoints,
       });
       const result = await promise;
-      if (result.paused) {
-        setPausedIndex(result.paused.index);
-      } else {
-        setPausedIndex(null);
-        setIsDebugInProgress(false);
-      }
+      console.log(result);
+      setPausedIndex(result && result.pausedIndex);
     } catch (e: unknown) {
       // eslint-disable-next-line no-console
       console.error(e);
       setPausedIndex(null);
+    } finally {
       setIsDebugInProgress(false);
     }
   }, [ipc, isDebugInProgress, steps, breakpoints]);
