@@ -47,7 +47,7 @@ export function DebugButton({
           : "Perform a Debug run for the journey you have recorded"
       }
       color="primary"
-      iconType="beaker"
+      iconType={isPaused ? "frameNext" : "bug"}
       isDisabled={isDisabled}
       onClick={isPaused ? onResume : onDebug}
     >

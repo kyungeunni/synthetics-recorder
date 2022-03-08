@@ -22,7 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiThemeComputed, EuiThemeContext } from "@elastic/eui";
+import {
+  EuiLoadingSpinner,
+  EuiThemeComputed,
+  EuiThemeContext,
+} from "@elastic/eui";
 import React, { useContext } from "react";
 import { ResultCategory } from "../common/types";
 
@@ -60,12 +64,20 @@ export function ActionStatusIndicator({
         />
       )}
       <circle cx="25" cy="37" r="12" fill={euiTheme.colors.lightestShade} />
-      <circle
-        cx="25"
-        cy="37"
-        r="3"
-        fill={getColorForStatus(euiTheme, status)}
-      />
+      <circle cx="25" cy="37" r="3" fill={getColorForStatus(euiTheme, status)}>
+        {status === "running" ? (
+          <animate
+            attributeName="r"
+            begin="0s"
+            dur="1s"
+            repeatCount="indefinite"
+            from="3"
+            to="9"
+          />
+        ) : (
+          ""
+        )}
+      </circle>
     </svg>
   );
 }
@@ -74,11 +86,11 @@ function getColorForStatus(
   euiTheme: EuiThemeComputed,
   status?: ResultCategory
 ) {
-  if (!status) return euiTheme.colors.darkestShade;
   switch (status) {
     case "succeeded":
       return euiTheme.colors.success;
     case "skipped":
+    case "running":
       return euiTheme.colors.warning;
     case "failed":
       return euiTheme.colors.danger;
