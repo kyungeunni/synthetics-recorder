@@ -25,3 +25,4 @@ THE SOFTWARE.
 export * from './electron';
 export * from './browser';
 export * as env from './env';
+export * from './testServer';

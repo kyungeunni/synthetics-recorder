@@ -36,9 +36,9 @@ module.exports = {
       preset: 'ts-jest',
       testEnvironment: 'jsdom',
       testMatch: ['**/?(*.)+(spec|test).[tj]sx'],
-      setupFilesAfterEnv: ['./jest.unit.setup.js'],
+      setupFilesAfterEnv: ['./__tests__/jest.unit.setup.js'],
       testPathIgnorePatterns: [`node_modules`, `\\.cache`, `e2e`, `build`],
-      resolver: `./tests/common/resolver.js`,
+      resolver: `./__tests__/common/resolver.js`,
     },
   ],
 };

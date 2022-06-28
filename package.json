@@ -7,7 +7,7 @@
     "install:pw": "node scripts/install-pw.js",
     "preinstall": "npx npm-force-resolutions@0.0.10",
     "postinstall": "npm run install:pw && electron-builder install-app-deps && npm run prepare-demo-app",
-    "prepare-demo-app": "npm install --prefix demo-app && npm run build --prefix demo-app",
+    "prepare-demo-app": "npm install --prefix __tests__/demo-app && npm run build --prefix __tests__/demo-app",
     "react:start": "react-scripts start",
     "react:build": "react-scripts build",
     "dev": "concurrently -k \"BROWSER=none npm run react:start\" \"npm run tsc-electron -- -w\" \"wait-on tcp:3000 && nodemon --exec electron build/electron/electron.js\"",
@@ -26,9 +26,9 @@
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest --config ./jest.unit.config.js .",
     "test:unit:watch": "npm run test:unit -- --coverage --watch --collectCoverageFrom={src,electron}/**/*.{js,jsx,ts,tsx}",
-    "test:e2e": "jest --runInBand --config ./jest.e2e.config.js ./e2e/tests",
+    "test:e2e": "jest --runInBand --config ./jest.e2e.config.js ./__tests__/e2e/tests",
     "test:e2e:server": "BROWSER=NONE PORT=61337 react-scripts start",
-    "test:e2e:runner": "IS_RUNNER=true TEST_PORT=61337 jest --config ./jest.e2e.config.js ./e2e/tests",
+    "test:e2e:runner": "IS_RUNNER=true TEST_PORT=61337 jest --config ./jest.e2e.config.js ./__tests__/e2e/tests",
     "update-demo-app": "git subtree pull --prefix demo-app git@github.com:vigneshshanmugam/synthetics-ecommerce-demo.git main --squash"
   },
   "author": {

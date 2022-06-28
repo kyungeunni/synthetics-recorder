@@ -21,10 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 import type { Server } from 'http';
-import { ElectronServiceFactory, env } from '../services';
-import { createTestHttpServer } from './testServer';
+import { ElectronServiceFactory, env, createTestHttpServer } from '../services';
 
 const electronService = new ElectronServiceFactory();
 
@@ -46,18 +44,41 @@ afterEach(async () => {
   server.close();
 });
 
-describe('Navigation', () => {
-  it("records chromium's opened pages", async () => {
+function getCoordinates({
+  x,
+  y,
+  width,
+  height,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}) {
+  return [x + width / 2, y + height / 2];
+}
+
+describe('Drag and Drop', () => {
+  it('creates a step and drags to a new position', async () => {
     const electronWindow = await electronService.getWindow();
-
     await electronService.enterTestUrl(env.DEMO_APP_URL);
-
     await electronService.clickStartRecording();
     await electronService.waitForPageToBeIdle();
     await electronService.navigateRecordingBrowser(url);
+    await electronService.recordClick('text=Hello Elastic Synthetics Recorder');
 
-    expect(await electronWindow.$('text=Step 1')).toBeTruthy();
-    expect(await electronWindow.$(`text=navigate ${env.DEMO_APP_URL}`)).toBeTruthy();
-    expect(await electronWindow.$(`text=navigate ${url}`)).toBeTruthy();
+    await (await electronWindow.$('id=insert-divider-0-1')).click();
+    await (await electronWindow.$('id=step-1')).hover();
+    await electronWindow.mouse.down();
+    await electronWindow.mouse.move(100, 100, { steps: 5 });
+    const dropZone = await (await electronWindow.$('id=action-element-1-0')).boundingBox();
+    const [dzx, dzy] = getCoordinates(dropZone);
+    await electronWindow.mouse.move(dzx, dzy, { steps: 5 });
+    await electronWindow.mouse.up();
+    /**
+     * There was originally only one action in this step, so the targeted insert button would only be
+     * rendered if Playwright successfully dragged the step separator over drop zone and released it.
+     */
+    expect(await electronWindow.$('id=insert-divider-0-1')).toBeTruthy();
   });
 });

@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { chromium, Browser } from 'playwright';
-import { env } from '../services';
+import { env } from '.';
 
 type ConnectRetryParams = { url?: string; timeout?: number; interval?: number };
 
