@@ -33,10 +33,11 @@ import { fork, ChildProcess } from 'child_process';
 import logger from 'electron-log';
 import isDev from 'electron-is-dev';
 import { JOURNEY_DIR, PLAYWRIGHT_BROWSERS_PATH, EXECUTABLE_PATH } from './config';
-import type { BrowserContext } from 'playwright';
-import type { ActionInContext, Steps } from '@elastic/synthetics';
+import type { BrowserContext } from 'playwright-core';
 import type {
+  ActionInContext,
   GenerateCodeOptions,
+  RecorderSteps,
   RecordJourneyOptions,
   RunJourneyOptions,
   StepEndEvent,
@@ -161,7 +162,7 @@ function onRecordJourneys(mainWindowEmitter: EventEmitter) {
  * @param {*} event the result data from Playwright
  * @returns the event data combined with action titles in a new object
  */
-function addActionsToStepResult(steps: Steps, event: StepEndEvent): TestEvent {
+function addActionsToStepResult(steps: RecorderSteps, event: StepEndEvent): TestEvent {
   const step = steps.find(
     s =>
       s.actions.length &&
@@ -274,10 +275,10 @@ function onTest(mainWindowEmitter: EventEmitter) {
     let synthCliProcess: ChildProcess | null = null; // child process, define here to kill when finished
 
     try {
-      const isSuite = data.isSuite;
+      const isProject = data.isProject;
       const args = ['--no-headless', '--reporter=json', '--screenshots=off', '--no-throttling'];
       const filePath = join(JOURNEY_DIR, 'recorded.journey.js');
-      if (!isSuite) {
+      if (!isProject) {
         args.push('--inline');
       } else {
         await mkdir(JOURNEY_DIR, { recursive: true });
@@ -306,7 +307,7 @@ function onTest(mainWindowEmitter: EventEmitter) {
       mainWindowEmitter.addListener(MainWindowEvent.MAIN_CLOSE, handleMainClose);
 
       const { stdout, stdin, stderr } = synthCliProcess as ChildProcess;
-      if (!isSuite) {
+      if (!isProject) {
         stdin?.write(data.code);
         stdin?.end();
       }
@@ -318,7 +319,7 @@ function onTest(mainWindowEmitter: EventEmitter) {
       for await (const chunk of stderr!) {
         logger.error(chunk);
       }
-      if (isSuite) {
+      if (isProject) {
         await rm(filePath, { recursive: true, force: true });
       }
 
@@ -346,6 +347,12 @@ function onTest(mainWindowEmitter: EventEmitter) {
 async function onFileSave(code: string) {
   const window = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
   const { filePath, canceled } = await dialog.showSaveDialog(window, {
+    filters: [
+      {
+        name: 'JavaScript',
+        extensions: ['js'],
+      },
+    ],
     defaultPath: 'recorded.journey.js',
   });
 
@@ -356,8 +363,8 @@ async function onFileSave(code: string) {
   return false;
 }
 
-async function onGenerateCode(data: { isSuite: boolean; actions: Steps }) {
-  const generator = new SyntheticsGenerator(data.isSuite);
+async function onGenerateCode(data: { isProject: boolean; actions: RecorderSteps }) {
+  const generator = new SyntheticsGenerator(data.isProject);
   return generator.generateFromSteps(data.actions);
 }
 
