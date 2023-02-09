@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import { fork, ChildProcess, ForkOptions } from 'child_process';
+import { Readable, Writable } from 'node:stream';
 import logger from 'electron-log';
 const SYNTHETICS_CLI = require.resolve('@elastic/synthetics/dist/cli');
 
@@ -39,7 +40,8 @@ export class SyntheticsManager {
   run(args: string[], options: ForkOptions) {
     const ps = fork(`${SYNTHETICS_CLI}`, args, options);
     this._cliProcess = ps;
-    return ps;
+    const { stdout, stdin, stderr } = ps;
+    return { stdout, stdin, stderr };
   }
 
   stop() {
@@ -48,6 +50,26 @@ export class SyntheticsManager {
     }
     this._cliProcess = null;
   }
+}
+
+class SyntheticsManagerMock extends SyntheticsManager {
+  protected _isRunning: boolean = false;
+
+  isRunning() {
+    return this._isRunning;
+  }
+
+  setIsRunning(val: boolean) {
+    this._isRunning = val;
+  }
+
+  // run(args: string[], options: ForkOptions) {
+  //   var stdout = new Readable();
+  //   var stderr = new Readable();
+  //   var stdin = new Writable();
+  //     return { stdout, stdin, stderr }
+  //   }
+  // }
 }
 
 export const syntheticsManager = new SyntheticsManager();

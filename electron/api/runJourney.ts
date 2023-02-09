@@ -25,7 +25,8 @@ import path from 'path';
 import { writeFile, rm, mkdir } from 'fs/promises';
 import { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import logger from 'electron-log';
-import isDev from 'electron-is-dev';
+// import isDev from 'electron-is-dev';
+const isDev = true;
 import type {
   ActionInContext,
   RecorderSteps,
@@ -37,12 +38,16 @@ import type {
 
 import { JOURNEY_DIR, PLAYWRIGHT_BROWSERS_PATH } from '../config';
 import { SyntheticsManager } from '../syntheticsManager';
-
+import { getBrowserWindow } from '../util';
 export async function runJourney(
   _event: IpcMainInvokeEvent,
   data: RunJourneyOptions,
   syntheticsManager: SyntheticsManager
 ) {
+  if (syntheticsManager.isRunning()) {
+    throw new Error('Synthetics test is already running');
+  }
+
   const constructEvent = (parsed: Record<string, any>): TestEvent | null => {
     const isJourneyStart = (event: any): event is { journey: { name: string } } => {
       return event.type === 'journey/start' && !!event.journey.name;
@@ -102,7 +107,7 @@ export async function runJourney(
   };
 
   // TODO: de-deup browserWindow getter
-  const browserWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+  const browserWindow = getBrowserWindow();
   const sendTestEvent = (event: TestEvent) => {
     browserWindow.webContents.send('test-event', event);
   };
@@ -147,6 +152,7 @@ export async function runJourney(
       args.unshift(filePath);
     }
 
+    console.log('hello?');
     const { stdout, stdin, stderr } = syntheticsManager.run(args, {
       env: {
         ...process.env,
