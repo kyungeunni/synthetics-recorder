@@ -24,8 +24,15 @@ THE SOFTWARE.
 import { fork, ChildProcess, ForkOptions } from 'child_process';
 import { Readable, Writable } from 'node:stream';
 import logger from 'electron-log';
+import { PLAYWRIGHT_BROWSERS_PATH } from './config';
 const SYNTHETICS_CLI = require.resolve('@elastic/synthetics/dist/cli');
+const isDev = true;
 
+export type CliStdio = {
+  stdout: Readable
+  stdin: Writable
+  stderr: Readable
+}
 export class SyntheticsManager {
   protected _cliProcess: ChildProcess | null = null;
 
@@ -37,11 +44,23 @@ export class SyntheticsManager {
    * Fork the Synthetics CLI with correct browser path and
    * cwd correctly spawns the process
    */
-  run(args: string[], options: ForkOptions) {
+  run(args: string[], options?: ForkOptions): CliStdio {
+    if (options == null) {
+      options = {
+        env: {
+          ...process.env,
+          PLAYWRIGHT_BROWSERS_PATH,
+        },
+        cwd: isDev ? process.cwd() : process.resourcesPath,
+        stdio: 'pipe',
+      }
+    }
     const ps = fork(`${SYNTHETICS_CLI}`, args, options);
     this._cliProcess = ps;
+    
     const { stdout, stdin, stderr } = ps;
-    return { stdout, stdin, stderr };
+    // we set stdio to pipe so it should all non-null
+    return { stdout, stdin, stderr } as CliStdio;
   }
 
   stop() {

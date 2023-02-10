@@ -22,34 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import {expect, jest, test} from '@jest/globals';
-import { runJourney } from '../runJourney';
+import { runJourney } from '../runJourneyCl';
 import { SyntheticsManager } from '../../syntheticsManager';
 import { RunJourneyOptions, Step } from '../../../common/types';
-import type { getBrowserWindow } from '../../util';
-
-jest.mock('../../util');
-
-let mockedBrowserWindow;
-let windowSend;
-
-beforeEach(() => {
-  mockedBrowserWindow = jest.Mocked<typeof getBrowserWindow>;
-  windowSend = jest.fn();
-
-  mockedBrowserWindow.mockImplementation(() => {
-    // Yes, this mock is still adding two numbers but imagine this
-    // was a complex function we are mocking.
-    return { 
+import { Readable, Writable } from 'stream';
+// import { getBrowserWindow } from '../../util';
+const sendMock = jest.fn();
+jest.mock('../../util', () => ({
+  getBrowserWindow: jest.fn(() => ({
       webContents: {
-        send: windowSend
+        send: sendMock
       }
-    };
-  });
-
-});
+    }))
+  })
+);
 
 afterEach(() => {
-  mockedBrowserWindow.mockClear();
+  sendMock.mockClear();
 });
 
 describe('runJourney', () => {
@@ -84,11 +73,29 @@ describe('runJourney', () => {
   describe('isProject: false', () => {
     it('adds `--inline` to args when launching synthetics agent', async () => {
       const syntheticsManager = new SyntheticsManager();
-      jest.mock('')
-      // TODO: mock run method and check the args and options
       const runMock = jest.fn((args, options) => {
-        console.log({ args, options });
-        throw new Error('eee');
+        // throw new Error('interrupt');
+        const stdout = new Readable({
+          read: (size: number) => { console.log('stdout.size: ', size) }
+        });
+        stdout.on('data', (chunk) => {
+            console.log('stdout: ', chunk);
+        });
+        const stderr = new Readable({
+          read: (size: number) => { console.log('stderr.size: ', size) }
+        });
+        stderr.on('data', (chunk) => {
+          console.log('stderr: ', chunk);
+      });
+        const stdin = new Writable();
+        stdin.on('data', (chunk) => {
+          console.log('stdin: ', chunk);
+        });
+        return { 
+          stdout, 
+          stdin, 
+          stderr,
+        };
       });
       syntheticsManager.run = runMock;
       try {
@@ -96,7 +103,9 @@ describe('runJourney', () => {
       } catch (err) {
         console.error(err);
       }
-      expect(runMock).toBeCalledWith([]);
+      expect(runMock).toBeCalled();
+      const [args] = runMock.mock.calls[0];
+      expect(args).toContain('--inline');
     });
     // it('provides script using stdin');
     // it('emits output and deliver events to renderer process via `test-event` channel');
@@ -117,5 +126,7 @@ describe('runJourney', () => {
   //   it('ignores unknown output');
   // });
 
-  // it('sends `journey/end` event when ');
+  // it('sends `journey/end` event when ', () => {
+      // expect(sendMock).toHaveBeenCalledWith('test-event', null);
+  // });
 });

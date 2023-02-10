@@ -26,19 +26,28 @@ import { writeFile, rm, mkdir } from 'fs/promises';
 import { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import logger from 'electron-log';
 // import isDev from 'electron-is-dev';
-const isDev = true;
 import type {
   ActionInContext,
   RecorderSteps,
   RunJourneyOptions,
   StepEndEvent,
+  Steps,
   StepStatus,
   TestEvent,
 } from '../../common/types';
 
-import { JOURNEY_DIR, PLAYWRIGHT_BROWSERS_PATH } from '../config';
-import { SyntheticsManager } from '../syntheticsManager';
+const DEFAULT_ARGS = [
+  '--no-headless',
+  '--reporter=json',
+  '--screenshots=off',
+  '--no-throttling',
+  '--sandbox',
+];
+
+import { JOURNEY_DIR } from '../config';
+import { CliStdio, SyntheticsManager } from '../syntheticsManager';
 import { getBrowserWindow } from '../util';
+
 export async function runJourney(
   _event: IpcMainInvokeEvent,
   data: RunJourneyOptions,
@@ -48,135 +57,9 @@ export async function runJourney(
     throw new Error('Synthetics test is already running');
   }
 
-  const constructEvent = (parsed: Record<string, any>): TestEvent | null => {
-    const isJourneyStart = (event: any): event is { journey: { name: string } } => {
-      return event.type === 'journey/start' && !!event.journey.name;
-    };
-
-    const isStepEnd = (
-      event: any
-    ): event is {
-      step: { duration: { us: number }; name: string; status: StepStatus };
-      error?: Error;
-    } => {
-      return (
-        event.type === 'step/end' &&
-        ['succeeded', 'failed', 'skipped'].includes(event.step?.status) &&
-        typeof event.step?.duration?.us === 'number'
-      );
-    };
-
-    const isJourneyEnd = (
-      event: any
-    ): event is { journey: { name: string; status: 'succeeded' | 'failed' } } => {
-      return (
-        event.type === 'journey/end' && ['succeeded', 'failed'].includes(event.journey?.status)
-      );
-    };
-
-    if (isJourneyStart(parsed)) {
-      return {
-        event: 'journey/start',
-        data: {
-          name: parsed.journey.name,
-        },
-      };
-    }
-
-    if (isStepEnd(parsed)) {
-      return {
-        event: 'step/end',
-        data: {
-          name: parsed.step.name,
-          status: parsed.step.status,
-          duration: Math.ceil(parsed.step.duration.us / 1000),
-          error: parsed.error,
-        },
-      };
-    }
-    if (isJourneyEnd(parsed)) {
-      return {
-        event: 'journey/end',
-        data: {
-          name: parsed.journey.name,
-          status: parsed.journey.status,
-        },
-      };
-    }
-    return null;
-  };
-
-  // TODO: de-deup browserWindow getter
-  const browserWindow = getBrowserWindow();
-  const sendTestEvent = (event: TestEvent) => {
-    browserWindow.webContents.send('test-event', event);
-  };
-
-  const emitResult = (chunk: string) => {
-    const parseOrSkip = (chunk: string): Array<Record<string, any>> => {
-      // at times stdout ships multiple steps in one chunk, broken by newline,
-      // so here we split on the newline
-      return chunk.split('\n').map(subChunk => {
-        try {
-          return JSON.parse(subChunk);
-        } catch (_) {
-          return {};
-        }
-      });
-    };
-    parseOrSkip(chunk).forEach(parsed => {
-      const event = constructEvent(parsed);
-      if (event) {
-        sendTestEvent(
-          event.event === 'step/end' ? addActionsToStepResult(data.steps, event) : event
-        );
-      }
-    });
-  };
-
   try {
-    const isProject = data.isProject;
-    const args = [
-      '--no-headless',
-      '--reporter=json',
-      '--screenshots=off',
-      '--no-throttling',
-      '--sandbox',
-    ];
-    const filePath = path.join(JOURNEY_DIR, 'recorded.journey.js');
-    if (!isProject) {
-      args.push('--inline');
-    } else {
-      await mkdir(JOURNEY_DIR, { recursive: true });
-      await writeFile(filePath, data.code);
-      args.unshift(filePath);
-    }
-
-    console.log('hello?');
-    const { stdout, stdin, stderr } = syntheticsManager.run(args, {
-      env: {
-        ...process.env,
-        PLAYWRIGHT_BROWSERS_PATH,
-      },
-      cwd: isDev ? process.cwd() : process.resourcesPath,
-      stdio: 'pipe',
-    });
-
-    if (!isProject) {
-      stdin?.write(data.code);
-      stdin?.end();
-    }
-    stdout?.setEncoding('utf-8');
-    stderr?.setEncoding('utf-8');
-    for await (const chunk of stdout!) {
-      emitResult(chunk);
-    }
-    for await (const chunk of stderr!) {
-      logger.error(chunk);
-    }
-    if (isProject) {
-      await rm(filePath, { recursive: true, force: true });
-    }
+    const runJourney = data.isProject ? runProjectJourney : runInlineJourney;
+    await runJourney(syntheticsManager, data);
   } catch (error: unknown) {
     logger.error(error);
     sendTestEvent({
@@ -190,6 +73,125 @@ export async function runJourney(
     await syntheticsManager.stop();
   }
 }
+
+export async function runInlineJourney(syntheticsManager: SyntheticsManager, data: RunJourneyOptions) {
+  const args = [
+    ...DEFAULT_ARGS,
+    '--inline'
+  ];
+
+  const stdio = syntheticsManager.run(args);
+  stdio.stdin?.write(data.code);
+  stdio.stdin?.end();
+  await consumeResult(stdio, data.steps);
+}
+
+export async function runProjectJourney(syntheticsManager: SyntheticsManager, data: RunJourneyOptions) {
+  const filePath = path.join(JOURNEY_DIR, 'recorded.journey.js');
+  await mkdir(JOURNEY_DIR, { recursive: true });
+  await writeFile(filePath, data.code);
+  const args = [
+    filePath,
+    ...DEFAULT_ARGS,
+  ];
+  const stdio = syntheticsManager.run(args);
+  await consumeResult(stdio, data.steps);
+  // cleanup
+  await rm(filePath, { recursive: true, force: true });
+}
+
+async function consumeResult({ stdout, stderr }: CliStdio, steps: Steps) {
+  stdout.setEncoding('utf-8');
+  stderr.setEncoding('utf-8');
+  for await (const chunk of stdout!) {
+    parseOrSkip(chunk).forEach(parsed => {
+      const event = constructEvent(parsed);
+      if (event) {
+        sendTestEvent(
+          event.event === 'step/end' ? addActionsToStepResult(steps, event) : event
+        );
+      }
+    });
+  }
+  for await (const chunk of stderr!) {
+    logger.error(chunk);
+  }
+}
+
+function constructEvent(parsed: Record<string, any>): TestEvent | null {
+  const isJourneyStart = (event: any): event is { journey: { name: string } } => {
+    return event.type === 'journey/start' && !!event.journey.name;
+  };
+
+  const isStepEnd = (
+    event: any
+  ): event is {
+    step: { duration: { us: number }; name: string; status: StepStatus };
+    error?: Error;
+  } => {
+    return (
+      event.type === 'step/end' &&
+      ['succeeded', 'failed', 'skipped'].includes(event.step?.status) &&
+      typeof event.step?.duration?.us === 'number'
+    );
+  };
+
+  const isJourneyEnd = (
+    event: any
+  ): event is { journey: { name: string; status: 'succeeded' | 'failed' } } => {
+    return (
+      event.type === 'journey/end' && ['succeeded', 'failed'].includes(event.journey?.status)
+    );
+  };
+
+  if (isJourneyStart(parsed)) {
+    return {
+      event: 'journey/start',
+      data: {
+        name: parsed.journey.name,
+      },
+    };
+  }
+
+  if (isStepEnd(parsed)) {
+    return {
+      event: 'step/end',
+      data: {
+        name: parsed.step.name,
+        status: parsed.step.status,
+        duration: Math.ceil(parsed.step.duration.us / 1000),
+        error: parsed.error,
+      },
+    };
+  }
+  if (isJourneyEnd(parsed)) {
+    return {
+      event: 'journey/end',
+      data: {
+        name: parsed.journey.name,
+        status: parsed.journey.status,
+      },
+    };
+  }
+  return null;
+};
+
+function parseOrSkip(chunk: string): Array<Record<string, any>> {
+  // at times stdout ships multiple steps in one chunk, broken by newline,
+  // so here we split on the newline
+  return chunk.split('\n').map(subChunk => {
+    try {
+      return JSON.parse(subChunk);
+    } catch (_) {
+      return {};
+    }
+  });
+};
+
+function sendTestEvent(event: TestEvent) {
+  const browserWindow = getBrowserWindow();
+  browserWindow.webContents.send('test-event', event);
+};
 
 /**
  * Attempts to find the step associated with a `step/end` event.
