@@ -100,7 +100,7 @@ export async function runProjectJourney(syntheticsManager: SyntheticsManager, da
   await rm(filePath, { recursive: true, force: true });
 }
 
-async function consumeResult({ stdout, stderr }: CliStdio, steps: Steps) {
+export async function consumeResult({ stdout, stderr }: CliStdio, steps: Steps) {
   stdout.setEncoding('utf-8');
   stderr.setEncoding('utf-8');
   for await (const chunk of stdout!) {

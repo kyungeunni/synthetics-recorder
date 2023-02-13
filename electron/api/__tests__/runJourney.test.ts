@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import {expect, jest, test} from '@jest/globals';
-import { runJourney } from '../runJourneyCl';
+import { runJourney } from '../runJourney';
 import { SyntheticsManager } from '../../syntheticsManager';
 import { RunJourneyOptions, Step } from '../../../common/types';
 import { Readable, Writable } from 'stream';
@@ -107,8 +107,59 @@ describe('runJourney', () => {
       const [args] = runMock.mock.calls[0];
       expect(args).toContain('--inline');
     });
-    // it('provides script using stdin');
-    // it('emits output and deliver events to renderer process via `test-event` channel');
+
+    it('provides script using stdin', async () => {
+      const syntheticsManager = new SyntheticsManager();
+      const stdinWriteMock = jest.fn();
+      const runMock = jest.fn((_args, options) => {
+        // throw new Error('interrupt');
+        const stdout = jest.fn() as unknown as Readable;
+        const stdin = {
+          write: stdinWriteMock,
+          end: jest.fn(),
+        } as unknown as Writable;
+        const stderr = jest.fn() as unknown as Readable;
+        return { 
+          stdout, 
+          stdin,
+          stderr,
+        };
+      });
+      syntheticsManager.run = runMock;
+      try {
+        await runJourney({} as any,  options, syntheticsManager);
+      } catch (err) {
+        console.error(err);
+      }
+      expect(stdinWriteMock).toBeCalled();
+      const [code] = stdinWriteMock.mock.calls[0];
+      expect(code).toBe(options.code);
+    });
+
+    it('emits output and deliver events to renderer process via `test-event` channel', async () => {
+      const syntheticsManager = new SyntheticsManager();
+      const stdinWriteMock = jest.fn();
+      const runMock = jest.fn((_args, options) => {
+        // throw new Error('interrupt');
+        const stdout = jest.fn() as unknown as Readable;
+        const stdin = {
+          write: stdinWriteMock,
+          end: jest.fn(),
+        } as unknown as Writable;
+        const stderr = jest.fn() as unknown as Readable;
+        return { 
+          stdout, 
+          stdin,
+          stderr,
+        };
+      });
+      syntheticsManager.run = runMock;
+      try {
+        await runJourney({} as any,  options, syntheticsManager);
+      } catch (err) {
+        console.error(err);
+      }
+    });
   });
 
   // describe('isProject: true', () => {
