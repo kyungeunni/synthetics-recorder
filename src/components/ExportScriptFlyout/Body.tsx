@@ -22,7 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiCheckbox, EuiCodeBlock, EuiFlyoutBody, EuiSpacer } from '@elastic/eui';
+import {
+  EuiCheckbox,
+  EuiCodeBlock,
+  EuiFlyoutBody,
+  EuiPanel,
+  EuiSpacer,
+  EuiTab,
+  EuiTabs,
+} from '@elastic/eui';
 import React from 'react';
 import type { Setter } from '../../common/types';
 
@@ -30,9 +38,17 @@ interface Props {
   code: string;
   exportAsProject: boolean;
   setExportAsProject: Setter<boolean>;
+  exportAsJson: boolean;
+  setExportAsJson: Setter<boolean>;
 }
 
-export function Body({ code, exportAsProject, setExportAsProject }: Props) {
+export function Body({
+  code,
+  exportAsProject,
+  setExportAsProject,
+  exportAsJson,
+  setExportAsJson,
+}: Props) {
   return (
     <EuiFlyoutBody>
       <EuiCheckbox
@@ -42,6 +58,14 @@ export function Body({ code, exportAsProject, setExportAsProject }: Props) {
         onChange={() => setExportAsProject(!exportAsProject)}
       />
       <EuiSpacer />
+      <EuiTabs>
+        <EuiTab isSelected={exportAsJson === false} onClick={() => setExportAsJson(false)}>
+          JS
+        </EuiTab>
+        <EuiTab isSelected={exportAsJson === true} onClick={() => setExportAsJson(true)}>
+          JSON
+        </EuiTab>
+      </EuiTabs>
       <EuiCodeBlock
         aria-label="Code to export"
         id="export-code-block"

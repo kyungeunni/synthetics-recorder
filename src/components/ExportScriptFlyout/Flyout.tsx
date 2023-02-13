@@ -46,9 +46,10 @@ export function ExportScriptFlyout({ setVisible, steps }: IExportScriptFlyout) {
   const [code, setCode] = useState('');
   const { electronAPI } = useContext(CommunicationContext);
   const [exportAsProject, setExportAsProject] = useState(false);
+  const [exportAsJson, setExportAsJson] = useState(false);
 
   const type: JourneyType = exportAsProject ? 'project' : 'inline';
-
+  const format: 'json' | 'js' = exportAsJson ? 'json' : 'js';
   const maxLineSize = useMemo(
     // get max line size in code string
     () => code.split('\n').reduce((prev, cur) => Math.max(prev, cur.length), 0),
@@ -57,19 +58,24 @@ export function ExportScriptFlyout({ setVisible, steps }: IExportScriptFlyout) {
 
   useEffect(() => {
     (async function getCode() {
-      const codeFromActions = await getCodeFromActions(electronAPI, steps, type);
+      const codeFromActions =
+        format === 'js'
+          ? await getCodeFromActions(electronAPI, steps, type)
+          : JSON.stringify(steps, null, 2);
       setCode(codeFromActions);
     })();
-  }, [electronAPI, steps, setCode, type]);
+  }, [electronAPI, steps, setCode, type, format]);
 
   return (
-    <EuiFlyout
-      aria-labelledby={FLYOUT_ID}
-      onClose={() => setVisible(false)}
-      size={maxLineSize > LARGE_FLYOUT_SIZE_LINE_LENGTH ? 'l' : 'm'}
-    >
+    <EuiFlyout aria-labelledby={FLYOUT_ID} onClose={() => setVisible(false)} size="m">
       <Header headerText="Journey code" id={FLYOUT_ID} />
-      <Body code={code} exportAsProject={exportAsProject} setExportAsProject={setExportAsProject} />
+      <Body
+        code={code}
+        exportAsProject={exportAsProject}
+        setExportAsProject={setExportAsProject}
+        exportAsJson={exportAsJson}
+        setExportAsJson={setExportAsJson}
+      />
       <Footer setVisible={setVisible} type={type} />
     </EuiFlyout>
   );
