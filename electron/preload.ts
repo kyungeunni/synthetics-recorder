@@ -62,6 +62,12 @@ const electronAPI: IElectronAPI = {
   addImportScriptListener: listener => {
     ipcRenderer.on('import-script', listener);
   },
+  startDebug: async params => {
+    return ipcRenderer.invoke('start-debug', params);
+  },
+  resumeDebug: async params => {
+    return ipcRenderer.invoke('resume-debug', params);
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

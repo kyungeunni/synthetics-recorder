@@ -21,3 +21,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+import { createContext } from 'react';
+import { Setter } from '../common/types';
+
+function notImplemented() {
+  throw Error('Debug context not initialized');
+}
+
+async function notImplementedAsync() {
+  notImplemented();
+}
+
+export interface IDebugContext {
+  isDebugInProgress: boolean;
+  debugPaused: boolean;
+  setIsDebugInProgress: Setter<boolean>;
+  startDebug: () => Promise<void>;
+  resumeDebug: () => Promise<void>;
+}
+
+export const DebugContext = createContext<IDebugContext>({
+  isDebugInProgress: false,
+  debugPaused: false,
+  setIsDebugInProgress: notImplemented,
+  startDebug: notImplementedAsync,
+  resumeDebug: notImplementedAsync,
+});

@@ -22,23 +22,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { IElectronAPI } from '../../../common/types';
+import { EuiToolTip } from '@elastic/eui';
+import React from 'react';
+import { ControlButton } from './ControlButton';
 
-export function getMockElectronApi(overrides?: Partial<IElectronAPI>): IElectronAPI {
-  return {
-    exportScript: jest.fn(),
-    recordJourney: jest.fn(),
-    stopRecording: jest.fn(),
-    pauseRecording: jest.fn(),
-    resumeRecording: jest.fn(),
-    addActionGeneratedListener: jest.fn(),
-    generateCode: jest.fn(),
-    openExternalLink: jest.fn(),
-    runTest: jest.fn(),
-    removeOnTestListener: jest.fn(),
-    addImportScriptListener: jest.fn(),
-    startDebug: jest.fn(),
-    resumeDebug: jest.fn(),
-    ...overrides,
-  };
+interface Props {
+  isDisabled: boolean;
+  isPaused: boolean;
+  onDebug: React.MouseEventHandler<HTMLButtonElement>;
+  onResume: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export function DebugButton({ isDisabled, onDebug, onResume, isPaused }: Props) {
+  const button = (
+    <ControlButton
+      aria-label={
+        isDisabled
+          ? 'You cannot execute your recorded Debugs until you have finished a recording session'
+          : 'Perform a Debug run for the journey you have recorded'
+      }
+      color="primary"
+      iconType={isPaused ? 'frameNext' : 'bug'}
+      isDisabled={isDisabled}
+      onClick={isPaused ? onResume : onDebug}
+    >
+      {isPaused ? 'Resume' : 'Debug'}
+    </ControlButton>
+  );
+
+  if (isDisabled) {
+    return (
+      <EuiToolTip content="Record a step in order to run a Debug" delay="long">
+        {button}
+      </EuiToolTip>
+    );
+  }
+
+  return button;
 }

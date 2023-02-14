@@ -50,7 +50,8 @@ import { ExportScriptFlyout } from './components/ExportScriptFlyout';
 import { useRecordingContext } from './hooks/useRecordingContext';
 import { StartOverWarningModal } from './components/StartOverWarningModal';
 import { ActionGeneratedListener, RecorderSteps, Steps } from '../common/types';
-
+import { DebugContext } from './contexts/DebugContext';
+import { useSyntheticsDebug } from './hooks/useSyntDebug';
 /**
  * This is the prescribed workaround to some internal EUI issues that occur
  * when EUI component styles load before the global styles. For more information, see
@@ -69,6 +70,7 @@ export default function App() {
   const stepsContextUtils = useStepsContext();
   const { steps, setSteps, breakpoints } = stepsContextUtils;
   const syntheticsTestUtils = useSyntheticsTest(steps);
+  const syntDebugUtils = useSyntheticsDebug(steps, breakpoints);
   const recordingContextUtils = useRecordingContext(
     electronAPI,
     url,
@@ -102,54 +104,62 @@ export default function App() {
         <StepsContext.Provider value={stepsContextUtils}>
           <RecordingContext.Provider value={recordingContextUtils}>
             <TestContext.Provider value={syntheticsTestUtils}>
-              <UrlContext.Provider value={{ url, setUrl }}>
-                <DragAndDropContext.Provider value={dragAndDropContext}>
-                  <ToastContext.Provider
-                    value={{ dismissToast, sendToast, setToastLifeTimeMs, toasts, toastLifeTimeMs }}
-                  >
-                    <Title />
-                    <HeaderControls setIsCodeFlyoutVisible={setIsCodeFlyoutVisible} />
-                    <AppPageBody>
-                      {steps.length === 0 && (
-                        <EuiEmptyPrompt
-                          hasBorder={false}
-                          title={<h3>No steps recorded yet</h3>}
-                          body={
-                            <p>
-                              Click on <EuiCode>Start recording</EuiCode> to get started with your
-                              script.
-                            </p>
-                          }
-                        />
-                      )}
-                      {steps.map((step, index) => (
-                        <StepSeparator
-                          index={index}
-                          key={`step-separator-${index + 1}`}
-                          step={step}
-                          breakpoints={breakpoints}
-                        />
-                      ))}
-                      <TestResult />
-                      {isCodeFlyoutVisible && (
-                        <ExportScriptFlyout setVisible={setIsCodeFlyoutVisible} steps={steps} />
-                      )}
-                      {isStartOverModalVisible && (
-                        <StartOverWarningModal
-                          startOver={startOver}
-                          setVisibility={setIsStartOverModalVisible}
-                          stepCount={steps.length}
-                        />
-                      )}
-                    </AppPageBody>
-                    <EuiGlobalToastList
-                      toasts={toasts}
-                      dismissToast={dismissToast}
-                      toastLifeTimeMs={toastLifeTimeMs}
-                    />
-                  </ToastContext.Provider>
-                </DragAndDropContext.Provider>
-              </UrlContext.Provider>
+              <DebugContext.Provider value={syntDebugUtils}>
+                <UrlContext.Provider value={{ url, setUrl }}>
+                  <DragAndDropContext.Provider value={dragAndDropContext}>
+                    <ToastContext.Provider
+                      value={{
+                        dismissToast,
+                        sendToast,
+                        setToastLifeTimeMs,
+                        toasts,
+                        toastLifeTimeMs,
+                      }}
+                    >
+                      <Title />
+                      <HeaderControls setIsCodeFlyoutVisible={setIsCodeFlyoutVisible} />
+                      <AppPageBody>
+                        {steps.length === 0 && (
+                          <EuiEmptyPrompt
+                            hasBorder={false}
+                            title={<h3>No steps recorded yet</h3>}
+                            body={
+                              <p>
+                                Click on <EuiCode>Start recording</EuiCode> to get started with your
+                                script.
+                              </p>
+                            }
+                          />
+                        )}
+                        {steps.map((step, index) => (
+                          <StepSeparator
+                            index={index}
+                            key={`step-separator-${index + 1}`}
+                            step={step}
+                            breakpoints={breakpoints}
+                          />
+                        ))}
+                        <TestResult />
+                        {isCodeFlyoutVisible && (
+                          <ExportScriptFlyout setVisible={setIsCodeFlyoutVisible} steps={steps} />
+                        )}
+                        {isStartOverModalVisible && (
+                          <StartOverWarningModal
+                            startOver={startOver}
+                            setVisibility={setIsStartOverModalVisible}
+                            stepCount={steps.length}
+                          />
+                        )}
+                      </AppPageBody>
+                      <EuiGlobalToastList
+                        toasts={toasts}
+                        dismissToast={dismissToast}
+                        toastLifeTimeMs={toastLifeTimeMs}
+                      />
+                    </ToastContext.Provider>
+                  </DragAndDropContext.Provider>
+                </UrlContext.Provider>
+              </DebugContext.Provider>
             </TestContext.Provider>
           </RecordingContext.Provider>
         </StepsContext.Provider>

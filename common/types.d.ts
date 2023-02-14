@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 
 import type { /* Step, Steps, */ Action } from '@elastic/synthetics';
+import { IpcRendererEvent } from 'electron';
 
 export type Step = {
   actions: ActionInContext[];
@@ -122,8 +123,12 @@ export type ImportScriptListener = (
   event: IpcRendererEvent,
   json: { steps: RecorderSteps }
 ) => void;
+export type DebugParams = {
+  steps: Steps;
+  breakpoints: Set<string>;
+};
 export interface IElectronAPI {
-  exportScript: (code: string, isJson: boolean?) => Promise<boolean>;
+  exportScript: (code: string, isJson?: boolean) => Promise<boolean>;
   recordJourney: (url: string) => Promise<void>;
   stopRecording: () => void;
   pauseRecording: () => Promise<void>;
@@ -134,4 +139,6 @@ export interface IElectronAPI {
   runTest: (params: RunJourneyOptions, listener: TestEventListener) => Promise<void>;
   removeOnTestListener: () => void;
   addImportScriptListener: (listener: ImportScriptListener) => void;
+  startDebug: (params: DebugParams) => Promise<DebugResult>;
+  resumeDebug: (params: DebugParams) => Promise<DebugResult>;
 }

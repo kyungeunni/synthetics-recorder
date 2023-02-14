@@ -82,10 +82,12 @@ export function useRecordingContext(
   };
 
   const importListener: ImportScriptListener = (_event, json) => {
-    // eslint-disable-next-line
-    const yes = confirm('Current script will be lost, are you sure?');
-    if (!yes) {
-      return;
+    if (stepCount > 0) {
+      // eslint-disable-next-line
+      const yes = confirm('Current script will be lost, are you sure?');
+      if (!yes) {
+        return;
+      }
     }
     // todo: validate schema
     setSteps(json.steps);

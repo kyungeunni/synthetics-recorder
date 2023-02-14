@@ -69,8 +69,18 @@ export function ExtraActions({
   return (
     <EuiFlexGroup alignItems="center" gutterSize="xs" justifyContent="spaceBetween">
       <EuiFlexItem>
-        {breakpointEnabled ? <EuiIcon aria-label="breakpoint" type="annotation" color="red" /> : ''}
-        <HeadingText actionContext={step} />
+        <EuiFlexGroup>
+          {breakpointEnabled ? (
+            <EuiFlexItem grow={false} style={{ marginLeft: 5, marginRight: -8 }}>
+              <EuiIcon aria-label="breakpoint" type="annotation" color="red" />
+            </EuiFlexItem>
+          ) : (
+            ''
+          )}
+          <EuiFlexItem>
+            <HeadingText actionContext={actionContext} />
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
         <ActionControlButton

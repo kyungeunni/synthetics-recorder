@@ -51,7 +51,7 @@ export function SaveCodeButton({ type, isJson = false }: ISaveCodeButton) {
         color: 'success',
       });
     }
-  }, [isJson]);
+  }, [electronAPI, sendToast, steps, type, isJson]);
   return (
     <EuiButton fill color="primary" iconType="exportAction" onClick={onSave} aria-label="save-code">
       Export

@@ -35,6 +35,7 @@ import {
   onGenerateCode,
 } from './api';
 import { syntheticsManager } from './syntheticsManager';
+import { resumeDebug, startDebug } from './api/debugJourney';
 
 export enum MainWindowEvent {
   MAIN_CLOSE = 'main-close',
@@ -66,6 +67,8 @@ export default function setupListeners(mainWindowEmitter: EventEmitter) {
   ipcMain.handle('export-script', onExportScript);
   ipcMain.handle('set-mode', onSetMode(browserManager));
   ipcMain.handle('open-external-link', onOpenExternalLink);
+  ipcMain.handle('start-debug', startDebug);
+  ipcMain.handle('resume-debug', resumeDebug);
 
   return () => ipcMain.removeAllListeners();
 }
