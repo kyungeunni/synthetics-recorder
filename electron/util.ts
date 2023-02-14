@@ -21,30 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+import { BrowserWindow } from 'electron';
 
-import { EuiFlyoutFooter, EuiFlexGroup, EuiFlexItem, EuiButtonEmpty } from '@elastic/eui';
-import React from 'react';
-import type { Setter } from '../../common/types';
-import type { JourneyType } from '../../../common/types';
-import { SaveCodeButton } from '../SaveCodeButton';
-
-interface IFlyoutFooter {
-  setVisible: Setter<boolean>;
-  type: JourneyType;
-  isJson: boolean;
-}
-
-export function Footer({ setVisible, type, isJson }: IFlyoutFooter) {
-  return (
-    <EuiFlyoutFooter>
-      <EuiFlexGroup justifyContent="spaceBetween">
-        <EuiFlexItem grow={false}>
-          <EuiButtonEmpty onClick={() => setVisible(false)}>Close</EuiButtonEmpty>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <SaveCodeButton type={type} isJson={isJson} />
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </EuiFlyoutFooter>
-  );
+export function getMainWindow() {
+  return BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
 }

@@ -25,6 +25,7 @@ THE SOFTWARE.
 import { createContext } from 'react';
 import { RecordingStatus } from '../common/types';
 import type { Setter } from '../common/types';
+import { ImportScriptListener } from '../../common/types';
 
 const UNINITIALIZED_MSG = 'Recording context not initialized';
 
@@ -68,6 +69,7 @@ export interface IRecordingContext {
    * Starts or stops a recording session.
    */
   toggleRecording: () => void;
+  importListener: ImportScriptListener;
 }
 
 export const RecordingContext = createContext<IRecordingContext>({
@@ -79,4 +81,5 @@ export const RecordingContext = createContext<IRecordingContext>({
   recordingStatus: RecordingStatus.NotRecording,
   togglePause: notImplemented,
   toggleRecording: notImplemented,
+  importListener: notImplemented,
 });

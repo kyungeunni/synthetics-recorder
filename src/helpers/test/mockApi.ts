@@ -36,6 +36,7 @@ export function getMockElectronApi(overrides?: Partial<IElectronAPI>): IElectron
     openExternalLink: jest.fn(),
     runTest: jest.fn(),
     removeOnTestListener: jest.fn(),
+    addImportScriptListener: jest.fn(),
     ...overrides,
   };
 }

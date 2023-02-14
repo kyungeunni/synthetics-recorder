@@ -34,7 +34,7 @@ describe('SaveCodeButton', () => {
     const exportScript = jest.fn();
     exportScript.mockImplementation(() => 'this would be generated code');
     const sendToast = jest.fn();
-    const { getByLabelText } = render(<SaveCodeButton type="project" />, {
+    const { getByLabelText } = render(<SaveCodeButton type="project" isJson={false} />, {
       contextOverrides: {
         communication: {
           electronAPI: getMockElectronApi({ exportScript }),

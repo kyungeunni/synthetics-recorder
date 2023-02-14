@@ -26,13 +26,21 @@ import type { MenuItemConstructorOptions } from 'electron';
 import path from 'path';
 import { BrowserWindow, shell } from 'electron';
 import isDev from 'electron-is-dev';
+import { importScript } from './api';
 
 export function buildMenu(appName: string): MenuItemConstructorOptions[] {
   const isMac = process.platform === 'darwin';
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
-      submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
+      submenu: [
+        isMac ? { role: 'close' } : { role: 'quit' },
+        {
+          label: 'Open...',
+          accelerator: 'CommandOrControl+O',
+          click: () => importScript(),
+        },
+      ],
     },
     {
       label: 'Edit',

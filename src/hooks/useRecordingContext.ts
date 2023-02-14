@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 import { useCallback, useState } from 'react';
 import { RecordingStatus, Setter } from '../common/types';
-import { IElectronAPI, RecorderSteps } from '../../common/types';
+import { IElectronAPI, ImportScriptListener, RecorderSteps } from '../../common/types';
 import { IRecordingContext } from '../contexts/RecordingContext';
 
 /**
@@ -81,6 +81,17 @@ export function useRecordingContext(
     }
   };
 
+  const importListener: ImportScriptListener = (_event, json) => {
+    // eslint-disable-next-line
+    const yes = confirm('Current script will be lost, are you sure?');
+    if (!yes) {
+      return;
+    }
+    // todo: validate schema
+    setSteps(json.steps);
+    setResult(undefined);
+  };
+
   return {
     startOver,
     isStartOverModalVisible,
@@ -88,5 +99,6 @@ export function useRecordingContext(
     recordingStatus,
     toggleRecording,
     togglePause,
+    importListener,
   };
 }

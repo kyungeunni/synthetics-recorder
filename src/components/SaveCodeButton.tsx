@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 import { EuiButton } from '@elastic/eui';
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { getCodeFromActions } from '../common/shared';
 import type { JourneyType } from '../../common/types';
 import { CommunicationContext } from '../contexts/CommunicationContext';
@@ -32,15 +32,18 @@ import { ToastContext } from '../contexts/ToastContext';
 
 interface ISaveCodeButton {
   type: JourneyType;
+  isJson?: boolean;
 }
 
-export function SaveCodeButton({ type }: ISaveCodeButton) {
+export function SaveCodeButton({ type, isJson = false }: ISaveCodeButton) {
   const { electronAPI } = useContext(CommunicationContext);
   const { steps } = useContext(StepsContext);
   const { sendToast } = useContext(ToastContext);
-  const onSave = async () => {
-    const codeFromActions = await getCodeFromActions(electronAPI, steps, type);
-    const exported = await electronAPI.exportScript(codeFromActions);
+  const onSave = useCallback(async () => {
+    const codeFromActions = isJson
+      ? JSON.stringify({ steps }, null, 2)
+      : await getCodeFromActions(electronAPI, steps, type);
+    const exported = await electronAPI.exportScript(codeFromActions, isJson);
     if (exported) {
       sendToast({
         id: `file-export-${new Date().valueOf()}`,
@@ -48,7 +51,7 @@ export function SaveCodeButton({ type }: ISaveCodeButton) {
         color: 'success',
       });
     }
-  };
+  }, [isJson]);
   return (
     <EuiButton fill color="primary" iconType="exportAction" onClick={onSave} aria-label="save-code">
       Export

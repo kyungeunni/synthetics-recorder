@@ -25,8 +25,8 @@ import type { IElectronAPI } from '../common/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
 const electronAPI: IElectronAPI = {
-  exportScript: async contents => {
-    return await ipcRenderer.invoke('export-script', contents);
+  exportScript: async (code, isJson) => {
+    return await ipcRenderer.invoke('export-script', code, isJson);
   },
   recordJourney: async url => {
     return await ipcRenderer.invoke('record-journey', url);
@@ -58,6 +58,9 @@ const electronAPI: IElectronAPI = {
   },
   removeOnTestListener: () => {
     ipcRenderer.removeAllListeners('test-event');
+  },
+  addImportScriptListener: listener => {
+    ipcRenderer.on('import-script', listener);
   },
 };
 

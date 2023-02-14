@@ -38,6 +38,7 @@ export const getRecordingContextDefaults = (): IRecordingContext => ({
   recordingStatus: RecordingStatus.NotRecording,
   togglePause: jest.fn(),
   toggleRecording: jest.fn(),
+  importListener: jest.fn(),
 });
 
 export const getUrlContextDefaults = (): IUrlContext => ({
@@ -93,6 +94,7 @@ export const getCommunicationContextDefaults = (): ICommunicationContext => ({
     openExternalLink: jest.fn(),
     runTest: jest.fn(),
     removeOnTestListener: jest.fn(),
+    addImportScriptListener: jest.fn(),
   },
 });
 

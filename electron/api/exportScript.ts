@@ -21,19 +21,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-import { BrowserWindow, dialog, IpcMainInvokeEvent } from 'electron';
-import { writeFile } from 'fs/promises';
+import { dialog, IpcMainInvokeEvent } from 'electron';
+import path from 'path';
+import { writeFile, readFile } from 'fs/promises';
+import { getMainWindow } from '../util';
 
-export async function onExportScript(_event: IpcMainInvokeEvent, code: string) {
-  const window = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-  const { filePath, canceled } = await dialog.showSaveDialog(window, {
+export async function onExportScript(_event: IpcMainInvokeEvent, code: string, isJson: boolean) {
+  const { filePath, canceled } = await dialog.showSaveDialog(getMainWindow(), {
     filters: [
-      {
-        name: 'JavaScript',
-        extensions: ['js'],
-      },
+      isJson
+        ? {
+            name: 'JSON',
+            extensions: ['json'],
+          }
+        : {
+            name: 'JavaScript',
+            extensions: ['js'],
+          },
     ],
-    defaultPath: 'recorded.journey.js',
+    defaultPath: `recorded.journey${isJson ? '.json' : '.js'}`,
   });
 
   if (!canceled && filePath) {
@@ -41,4 +47,27 @@ export async function onExportScript(_event: IpcMainInvokeEvent, code: string) {
     return true;
   }
   return false;
+}
+
+export async function importScript() {
+  const window = getMainWindow();
+  const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    properties: ['openFile'],
+  });
+
+  if (canceled == null) {
+    return;
+  }
+
+  const [pathToFile] = filePaths;
+  try {
+    const contents = await readFile(pathToFile, { encoding: 'utf-8' });
+    const parsed = JSON.parse(contents);
+
+    // TODO: deliver parsed script to StepsContext.tsx :thinking-face:
+    getMainWindow().webContents.send('import-script', parsed);
+  } catch (err) {
+    throw new Error(`Failed to import file ${path.basename(pathToFile)}`);
+  }
 }

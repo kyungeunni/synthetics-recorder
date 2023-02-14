@@ -61,7 +61,7 @@ export function ExportScriptFlyout({ setVisible, steps }: IExportScriptFlyout) {
       const codeFromActions =
         format === 'js'
           ? await getCodeFromActions(electronAPI, steps, type)
-          : JSON.stringify(steps, null, 2);
+          : JSON.stringify({ steps }, null, 2);
       setCode(codeFromActions);
     })();
   }, [electronAPI, steps, setCode, type, format]);
@@ -76,7 +76,7 @@ export function ExportScriptFlyout({ setVisible, steps }: IExportScriptFlyout) {
         exportAsJson={exportAsJson}
         setExportAsJson={setExportAsJson}
       />
-      <Footer setVisible={setVisible} type={type} />
+      <Footer setVisible={setVisible} type={type} isJson={exportAsJson} />
     </EuiFlyout>
   );
 }

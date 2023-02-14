@@ -81,7 +81,6 @@ export default function App() {
 
   const { dismissToast, sendToast, setToastLifeTimeMs, toasts, toastLifeTimeMs } =
     useGlobalToasts();
-
   useEffect(() => {
     // `actions` here is a set of `ActionInContext`s that make up a `Step`
     const listener: ActionGeneratedListener = (_event, actions) => {
@@ -91,6 +90,9 @@ export default function App() {
       });
     };
     const removeListener = electronAPI.addActionGeneratedListener(listener);
+    // add import listener
+    electronAPI.addImportScriptListener(recordingContextUtils.importListener);
+
     return removeListener;
   }, [electronAPI, setSteps]);
 
