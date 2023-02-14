@@ -186,7 +186,7 @@ export class SyntheticsGenerator extends PlaywrightGenerator.JavaScriptLanguageG
       subject = pageAlias;
     } else if (actionInContext.frame.selectorsChain && action.name !== 'navigate') {
       const locators = actionInContext.frame.selectorsChain.map(
-        selector => '.' + asLocator(selector, 'frameLocator')
+        selector => `.frameLocator(${quote(selector)})`
       );
       subject = `${pageAlias}${locators.join('')}`;
     } else if (actionInContext.frame.name) {

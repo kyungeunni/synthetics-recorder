@@ -111,8 +111,8 @@ class JourneyDebugRunner {
         continue;
       }
       for (const [actionIndex, action] of step.actions.entries()) {
-        if (Number(actionIndex) < pActionIndex) {
-          console.log('actionIndex, stepIndex: ', actionIndex, stepIndex, 'continued');
+        if (stepIndex === pStepIndex && Number(actionIndex) < pActionIndex) {
+          console.log('stepIndex, actionIndex: ', actionIndex, stepIndex, 'continued');
           continue;
         }
 

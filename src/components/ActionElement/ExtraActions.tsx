@@ -116,6 +116,25 @@ export function ExtraActions({
               actionIndex + 1
             );
           })}
+          onAddAction={(actionName: string) => {
+            if (isSettingsPopoverOpen) {
+              setIsSettingsPopoverOpen(false);
+            }
+            onInsertAction(
+              {
+                ...actionContext,
+                action: {
+                  ...actionContext.action,
+                  name: actionName,
+                  selector: actionContext.action.selector || '',
+                },
+                isOpen: true,
+                modified: false,
+              },
+              stepIndex,
+              actionIndex + 1
+            );
+          }}
           onEdit={onEdit}
           onDelete={settingsHandler(() => {
             onDeleteAction(stepIndex, actionIndex);

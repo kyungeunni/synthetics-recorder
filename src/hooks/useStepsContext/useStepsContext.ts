@@ -23,8 +23,10 @@ THE SOFTWARE.
 */
 
 // import type { Step } from '@elastic/synthetics';
+import { Action } from '@elastic/synthetics';
 import { useCallback, useState } from 'react';
-import { ActionContext, RecorderSteps, Step } from '../../../common/types';
+import { ActionContext, ActionInContext, RecorderSteps, Step } from '../../../common/types';
+import { actionTitle } from '../../common/shared';
 import type { IStepsContext } from '../../contexts/StepsContext';
 import { onDropStep } from './onDropStep';
 
@@ -94,11 +96,12 @@ export function useStepsContext(): IStepsContext {
       setSteps([...steps.slice(0, stepIndex), ...steps.slice(stepIndex + 1)]);
     },
     onInsertAction: (action, targetStepIdx, indexToInsert) => {
+      const validAction = getValidAction(action);
       setSteps(
         steps.map((step, currentStepIndex) => {
           if (currentStepIndex !== targetStepIdx) return step;
 
-          step.actions.splice(indexToInsert, 0, action);
+          step.actions.splice(indexToInsert, 0, validAction);
 
           return { name: step.name, actions: [...step.actions] };
         })
@@ -207,5 +210,67 @@ export function useStepsContext(): IStepsContext {
       copySet.has(key) ? copySet.delete(key) : copySet.add(key);
       setBreakpoints(copySet);
     },
+  };
+}
+
+function getValidAction(actionInContext: ActionInContext): ActionInContext {
+  const { action } = actionInContext;
+  let validAction: Action | null = null;
+  switch (action.name) {
+    case 'click':
+      validAction = {
+        name: 'click',
+        selector: action.selector ?? 'div',
+        button: action.button ?? 'left',
+        modifiers: 0,
+        clickCount: 1,
+        signals: action.signals ?? [],
+      };
+      break;
+
+    case 'fill':
+      validAction = {
+        name: action.name,
+        selector: action.selector ?? 'div',
+        signals: action.signals ?? [],
+        text: action.text ?? 'changeme',
+      };
+
+      break;
+    case 'press':
+      validAction = {
+        name: 'press',
+        selector: action.selector ?? 'div',
+        signals: [],
+        key: action.key ?? 'Enter',
+        modifiers: 0,
+      };
+      break;
+
+    case 'navigate':
+      validAction = {
+        name: 'navigate',
+        url: action.url ?? 'https://example.com',
+        signals: action.signals ?? [],
+      };
+      break;
+
+    case 'select':
+      validAction = {
+        name: 'select',
+        selector: action.selector ?? 'div',
+        options: action.options ?? [],
+        signals: action.signals ?? [],
+      };
+      break;
+  }
+
+  if (validAction == null) {
+    throw new Error('Invalid action');
+  }
+  return {
+    ...actionInContext,
+    action: validAction,
+    title: actionTitle(validAction),
   };
 }

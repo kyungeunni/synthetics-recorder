@@ -33,6 +33,7 @@ interface ISettingsPopover {
   isVisible: boolean;
   isOpen: boolean;
   onAddAssertion: () => void;
+  onAddAction: (actionName: string) => void;
   onDelete: () => void;
   onSoftDelete: () => void;
   onEdit: () => void;
@@ -40,6 +41,19 @@ interface ISettingsPopover {
   setIsOpen: Setter<boolean>;
   breakpointEnabled?: boolean;
 }
+
+const actionNames = [
+  // 'openPage',
+  // 'closePage',
+  'click',
+  // 'check',
+  // 'uncheck',
+  'fill',
+  // 'setInputFiles',
+  'press',
+  'navigate',
+  'select',
+];
 
 function createDeleteButton(
   isRecording: boolean,
@@ -68,6 +82,7 @@ export function SettingsPopover({
   isOpen,
   setIsOpen,
   onAddAssertion,
+  onAddAction,
   onDelete,
   onSoftDelete,
   onEdit,
@@ -105,6 +120,11 @@ export function SettingsPopover({
                 onClick: onAddAssertion,
               },
               {
+                icon: 'plusInCircle',
+                name: 'Add action',
+                panel: 1,
+              },
+              {
                 'data-test-subj': 'edit-action',
                 disabled: isRecording,
                 icon: 'pencil',
@@ -113,6 +133,14 @@ export function SettingsPopover({
               },
               createDeleteButton(isRecording, onDelete, onSoftDelete, isAssertion),
             ],
+          },
+          {
+            id: 1,
+            title: 'Choose action',
+            items: actionNames.map(actionName => ({
+              name: actionName,
+              onClick: () => onAddAction(actionName),
+            })),
           },
         ]}
       />
