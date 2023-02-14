@@ -81,11 +81,11 @@ export function performSelectorLookup(
 
 export async function getCodeFromActions(
   ipc: RendererProcessIpc,
-  actions: Steps,
+  steps: Steps,
   type: JourneyType
 ): Promise<string> {
   return await ipc.callMain("actions-to-code", {
-    actions: actions.flat(),
+    steps,
     isSuite: type === "suite",
   });
 }

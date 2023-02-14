@@ -21,38 +21,47 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-const { dialog, shell, BrowserWindow } = require("electron");
-const logger = require("electron-log");
-const { writeFile } = require("fs/promises");
-const {
-  SyntheticsGenerator,
-} = require("@elastic/synthetics/dist/formatter/javascript");
 
-exports.onTransformCode = async function onTransformCode(data) {
-  const generator = new SyntheticsGenerator(data.isSuite);
-  const code = generator.generateText(data.steps);
-  return code;
-};
+import { EuiToolTip } from "@elastic/eui";
+import React from "react";
+import { ControlButton } from "./ControlButton";
 
-exports.onLinkExternal = async function onLinkExternal(url) {
-  try {
-    await shell.openExternal(url);
-  } catch (e) {
-    logger.error(e);
-  }
-};
+interface Props {
+  isDisabled: boolean;
+  isPaused: boolean;
+  onDebug: React.MouseEventHandler<HTMLButtonElement>;
+  onResume: React.MouseEventHandler<HTMLButtonElement>;
+}
 
-exports.onFileSave = async function onFileSave(code) {
-  const { filePath, canceled } = await dialog.showSaveDialog(
-    BrowserWindow.getFocusedWindow(),
-    {
-      defaultPath: "recorded.journey.js",
-    }
+export function DebugButton({
+  isDisabled,
+  onDebug,
+  onResume,
+  isPaused,
+}: Props) {
+  const button = (
+    <ControlButton
+      aria-label={
+        isDisabled
+          ? "You cannot execute your recorded Debugs until you have finished a recording session"
+          : "Perform a Debug run for the journey you have recorded"
+      }
+      color="primary"
+      iconType={isPaused ? "frameNext" : "bug"}
+      isDisabled={isDisabled}
+      onClick={isPaused ? onResume : onDebug}
+    >
+      {isPaused ? "Resume" : "Debug"}
+    </ControlButton>
   );
 
-  if (!canceled) {
-    await writeFile(filePath, code);
-    return true;
+  if (isDisabled) {
+    return (
+      <EuiToolTip content="Record a step in order to run a Debug" delay="long">
+        {button}
+      </EuiToolTip>
+    );
   }
-  return false;
-};
+
+  return button;
+}

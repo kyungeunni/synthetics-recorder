@@ -53,6 +53,8 @@ import { StyledComponentsEuiProvider } from "./contexts/StyledComponentsEuiProvi
 import { ExportScriptFlyout } from "./components/ExportScriptFlyout";
 import { useRecordingContext } from "./hooks/useRecordingContext";
 import { StartOverWarningModal } from "./components/StartOverWarningModal";
+import { DebugContext } from "./contexts/DebugContext";
+import { useSyntheticsDebug } from "./hooks/useSyntDebug";
 
 export default function App() {
   const [url, setUrl] = useState("");
@@ -65,6 +67,7 @@ export default function App() {
   const { isStartOverModalVisible, setIsStartOverModalVisible, startOver } =
     recordingContextUtils;
   const syntheticsTestUtils = useSyntheticsTest(steps);
+  const syntDebugUtils = useSyntheticsDebug(steps, breakpoints);
 
   useEffect(() => {
     // `actions` here is a set of `ActionInContext`s that make up a `Step`
@@ -82,49 +85,51 @@ export default function App() {
         <StepsContext.Provider value={stepsContextUtils}>
           <RecordingContext.Provider value={recordingContextUtils}>
             <TestContext.Provider value={syntheticsTestUtils}>
-              <UrlContext.Provider value={{ url, setUrl }}>
-                <Title />
-                <HeaderControls
-                  setIsCodeFlyoutVisible={setIsCodeFlyoutVisible}
-                />
-                <AppPageBody>
-                  {steps.length === 0 && (
-                    <EuiEmptyPrompt
-                      aria-label="This empty prompt indicates that you have not recorded any journey steps yet."
-                      hasBorder={false}
-                      title={<h3>No steps recorded yet</h3>}
-                      body={
-                        <p>
-                          Click on <EuiCode>Start recording</EuiCode> to get
-                          started with your script.
-                        </p>
-                      }
-                    />
-                  )}
-                  {steps.map((step, index) => (
-                    <StepSeparator
-                      index={index}
-                      key={`step-separator-${index + 1}`}
-                      step={step}
-                      breakpoints={breakpoints}
-                    />
-                  ))}
-                  <TestResult />
-                  {isCodeFlyoutVisible && (
-                    <ExportScriptFlyout
-                      setVisible={setIsCodeFlyoutVisible}
-                      steps={steps}
-                    />
-                  )}
-                  {isStartOverModalVisible && (
-                    <StartOverWarningModal
-                      startOver={startOver}
-                      setVisibility={setIsStartOverModalVisible}
-                      stepCount={steps.length}
-                    />
-                  )}
-                </AppPageBody>
-              </UrlContext.Provider>
+              <DebugContext.Provider value={syntDebugUtils}>
+                <UrlContext.Provider value={{ url, setUrl }}>
+                  <Title />
+                  <HeaderControls
+                    setIsCodeFlyoutVisible={setIsCodeFlyoutVisible}
+                  />
+                  <AppPageBody>
+                    {steps.length === 0 && (
+                      <EuiEmptyPrompt
+                        aria-label="This empty prompt indicates that you have not recorded any journey steps yet."
+                        hasBorder={false}
+                        title={<h3>No steps recorded yet</h3>}
+                        body={
+                          <p>
+                            Click on <EuiCode>Start recording</EuiCode> to get
+                            started with your script.
+                          </p>
+                        }
+                      />
+                    )}
+                    {steps.map((step, index) => (
+                      <StepSeparator
+                        index={index}
+                        key={`step-separator-${index + 1}`}
+                        step={step}
+                        breakpoints={breakpoints}
+                      />
+                    ))}
+                    <TestResult />
+                    {isCodeFlyoutVisible && (
+                      <ExportScriptFlyout
+                        setVisible={setIsCodeFlyoutVisible}
+                        steps={steps}
+                      />
+                    )}
+                    {isStartOverModalVisible && (
+                      <StartOverWarningModal
+                        startOver={startOver}
+                        setVisibility={setIsStartOverModalVisible}
+                        stepCount={steps.length}
+                      />
+                    )}
+                  </AppPageBody>
+                </UrlContext.Provider>
+              </DebugContext.Provider>
             </TestContext.Provider>
           </RecordingContext.Provider>
         </StepsContext.Provider>

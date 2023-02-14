@@ -21,38 +21,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-const { dialog, shell, BrowserWindow } = require("electron");
-const logger = require("electron-log");
-const { writeFile } = require("fs/promises");
-const {
-  SyntheticsGenerator,
-} = require("@elastic/synthetics/dist/formatter/javascript");
+import { createContext } from "react";
+import { Setter } from "../common/types";
 
-exports.onTransformCode = async function onTransformCode(data) {
-  const generator = new SyntheticsGenerator(data.isSuite);
-  const code = generator.generateText(data.steps);
-  return code;
-};
+function notImplemented() {
+  throw Error("Debug context not initialized");
+}
 
-exports.onLinkExternal = async function onLinkExternal(url) {
-  try {
-    await shell.openExternal(url);
-  } catch (e) {
-    logger.error(e);
-  }
-};
+async function notImplementedAsync() {
+  notImplemented();
+}
 
-exports.onFileSave = async function onFileSave(code) {
-  const { filePath, canceled } = await dialog.showSaveDialog(
-    BrowserWindow.getFocusedWindow(),
-    {
-      defaultPath: "recorded.journey.js",
-    }
-  );
+export interface IDebugContext {
+  isDebugInProgress: boolean;
+  debugPaused: boolean;
+  setIsDebugInProgress: Setter<boolean>;
+  startDebug: () => Promise<void>;
+  resumeDebug: () => Promise<void>;
+}
 
-  if (!canceled) {
-    await writeFile(filePath, code);
-    return true;
-  }
-  return false;
-};
+export const DebugContext = createContext<IDebugContext>({
+  isDebugInProgress: false,
+  debugPaused: false,
+  setIsDebugInProgress: notImplemented,
+  startDebug: notImplementedAsync,
+  resumeDebug: notImplementedAsync,
+});

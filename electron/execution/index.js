@@ -25,6 +25,7 @@ const { ipcMain: ipc } = require("electron-better-ipc");
 
 const { recordJourneys, onSetMode } = require("./record-journey");
 const { onTest } = require("./run-journey");
+const { startDebug, resumeDebug } = require("./debug-journey");
 const { onLinkExternal, onTransformCode, onFileSave } = require("./util");
 
 function setupListeners() {
@@ -34,6 +35,8 @@ function setupListeners() {
   ipc.answerRenderer("actions-to-code", onTransformCode);
   ipc.answerRenderer("set-mode", onSetMode);
   ipc.answerRenderer("link-to-external", onLinkExternal);
+  ipc.answerRenderer("start-debug", startDebug);
+  ipc.answerRenderer("resume-debug", resumeDebug);
 }
 
 module.exports = setupListeners;
