@@ -220,7 +220,7 @@ function getValidAction(actionInContext: ActionInContext): ActionInContext {
     case 'click':
       validAction = {
         name: 'click',
-        selector: action.selector ?? 'div',
+        selector: action.selector || 'div',
         button: action.button ?? 'left',
         modifiers: 0,
         clickCount: 1,
@@ -231,7 +231,7 @@ function getValidAction(actionInContext: ActionInContext): ActionInContext {
     case 'fill':
       validAction = {
         name: action.name,
-        selector: action.selector ?? 'div',
+        selector: action.selector || 'div',
         signals: action.signals ?? [],
         text: action.text ?? 'changeme',
       };
@@ -240,7 +240,7 @@ function getValidAction(actionInContext: ActionInContext): ActionInContext {
     case 'press':
       validAction = {
         name: 'press',
-        selector: action.selector ?? 'div',
+        selector: action.selector || 'div',
         signals: [],
         key: action.key ?? 'Enter',
         modifiers: 0,
@@ -248,21 +248,36 @@ function getValidAction(actionInContext: ActionInContext): ActionInContext {
       break;
 
     case 'navigate':
+      const url = action.url ?? 'https://example.com';
       validAction = {
         name: 'navigate',
-        url: action.url ?? 'https://example.com',
-        signals: action.signals ?? [],
+        url,
+        signals:
+          action.signals.map(signal => ({
+            ...signal,
+            url,
+          })) ?? [],
       };
       break;
 
     case 'select':
       validAction = {
         name: 'select',
-        selector: action.selector ?? 'div',
+        selector: action.selector || 'div',
         options: action.options ?? [],
         signals: action.signals ?? [],
       };
+
       break;
+    case 'assert':
+      validAction = {
+        name: 'assert',
+        selector: action.selector || 'div',
+        command: 'isVisible',
+        value: action.value ?? undefined,
+        signals: [],
+        isAssert: true,
+      };
   }
 
   if (validAction == null) {

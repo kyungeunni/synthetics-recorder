@@ -141,4 +141,5 @@ export interface IElectronAPI {
   addImportScriptListener: (listener: ImportScriptListener) => void;
   startDebug: (params: DebugParams) => Promise<DebugResult>;
   resumeDebug: (params: DebugParams) => Promise<DebugResult>;
+  resetDebug: () => Promise<void>;
 }

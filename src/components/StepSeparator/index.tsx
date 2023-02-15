@@ -35,9 +35,10 @@ interface IStepSeparator {
   index: number;
   step: Step;
   breakpoints: Set<string>;
+  pausedAt: string | null;
 }
 
-export function StepSeparator({ index, step, breakpoints }: IStepSeparator) {
+export function StepSeparator({ index, step, breakpoints, pausedAt }: IStepSeparator) {
   const testStatus = useStepResultStatus(
     step.actions.length ? step.actions[0].title : undefined,
     step.name
@@ -75,6 +76,7 @@ export function StepSeparator({ index, step, breakpoints }: IStepSeparator) {
             testStatus={testStatus}
             isLast={actionIndex === step.actions.length - 1}
             breakpointEnabled={breakpoints.has(`${index}:${actionIndex}`)}
+            breakpointFocused={pausedAt === `${index}:${actionIndex}`}
           />
         ))}
       </StepSeparatorAccordion>

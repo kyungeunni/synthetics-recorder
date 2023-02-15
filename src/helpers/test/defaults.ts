@@ -99,6 +99,7 @@ export const getCommunicationContextDefaults = (): ICommunicationContext => ({
     addImportScriptListener: jest.fn(),
     startDebug: jest.fn(),
     resumeDebug: jest.fn(),
+    resetDebug: jest.fn(),
   },
 });
 

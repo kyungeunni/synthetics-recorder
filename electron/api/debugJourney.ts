@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import { Browser, BrowserContext, chromium, Page } from 'playwright';
-// TODO: fix synth generator
 import { SyntheticsGenerator } from '../syntheticsGenerator';
 
 import { expect } from '@elastic/synthetics';
@@ -39,7 +38,8 @@ type Session = {
 export type DebugResult = {
   finished: boolean;
   paused: boolean;
-  pausedIndex: string | null;
+  pausedIndex: string;
+  error: Error | null;
 };
 
 class JourneyDebugRunner {
@@ -62,26 +62,15 @@ class JourneyDebugRunner {
       console.log('session exists');
       return;
     }
-    const { page } = await this.startSession();
+    await this.startSession();
     console.log('breakpoints:', [...breakpoints]);
     for (const [stepIndex, step] of steps.entries()) {
       for (const [actionIndex, action] of step.actions.entries()) {
         const key = stepIndex + ':' + actionIndex;
-        console.log({ key });
-        if (breakpoints.has(key)) {
-          this.pausedIndex = key;
-          return {
-            finished: false,
-            paused: true,
-            pausedIndex: key,
-          };
-        }
-        try {
-          await this.runAction(page, action);
-        } catch (err) {
-          console.error(err);
-          this.closeBrowser().catch(_e => console.error);
-          throw err;
+        const result = await this.runAction({ key, breakpoints, action });
+        if (result) {
+          app.focus({ steal: true });
+          return result;
         }
       }
     }
@@ -90,8 +79,43 @@ class JourneyDebugRunner {
     return {
       finished: true,
       paused: false,
-      pausedIndex: null,
+      pausedIndex: '',
+      error: null,
     };
+  }
+
+  async runAction({
+    key,
+    breakpoints,
+    action,
+  }: {
+    key: string;
+    breakpoints: Set<string>;
+    action: ActionInContext;
+  }) {
+    if (this.pausedIndex !== key && breakpoints.has(key)) {
+      this.pausedIndex = key;
+      return {
+        finished: false,
+        paused: true,
+        pausedIndex: key,
+        error: null,
+      };
+    }
+
+    try {
+      await this.evaluateAction(this.session!.page, action);
+    } catch (err) {
+      console.error(err);
+      this.closeBrowser().catch(_e => console.error);
+      return {
+        finished: true,
+        paused: false,
+        pausedIndex: '',
+        error: new Error(`Failed to run action ${action.title}. Run Test to see the details`),
+      };
+    }
+    return null;
   }
 
   async resume({ steps, breakpoints }: DebugParams) {
@@ -115,24 +139,11 @@ class JourneyDebugRunner {
           console.log('stepIndex, actionIndex: ', actionIndex, stepIndex, 'continued');
           continue;
         }
-
         const key = stepIndex + ':' + actionIndex;
-        if (this.pausedIndex !== key && breakpoints.has(key)) {
+        const result = await this.runAction({ key, breakpoints, action });
+        if (result) {
           app.focus({ steal: true });
-          this.pausedIndex = key;
-          return {
-            finished: false,
-            paused: true,
-            pausedIndex: key,
-          };
-        }
-
-        try {
-          await this.runAction(page, action);
-        } catch (err) {
-          console.error(err);
-          this.closeBrowser().catch(_e => null);
-          throw err;
+          return result;
         }
       }
     }
@@ -140,7 +151,8 @@ class JourneyDebugRunner {
     return {
       finished: true,
       paused: false,
-      pausedIndex: null,
+      pausedIndex: '',
+      error: null,
     };
   }
 
@@ -157,6 +169,7 @@ class JourneyDebugRunner {
 
   resetSession() {
     this.session = null;
+    this.pausedIndex = '';
   }
 
   async launchBrowser() {
@@ -173,6 +186,7 @@ class JourneyDebugRunner {
         const hasPage = browser.contexts().some(context => context.pages().length > 0);
         if (hasPage) return;
         this.closeBrowser().catch(_e => null);
+        this.resetSession();
       });
     });
     return { browser, context };
@@ -190,7 +204,7 @@ class JourneyDebugRunner {
     this._closingBrowser = false;
   }
 
-  async runAction(page: Page, action: ActionInContext) {
+  async evaluateAction(page: Page, action: ActionInContext) {
     const code = this.codeGenerator.generateAction(action);
     const globals = ['module', 'exports', 'require', 'global', 'process'];
     const js = new Function(
@@ -209,3 +223,7 @@ export const startDebug = async (_event: IpcMainInvokeEvent, params: DebugParams
 
 export const resumeDebug = async (_event: IpcMainInvokeEvent, params: DebugParams) =>
   debugRunner.resume(params);
+
+export const resetDebug = async (_event: IpcMainInvokeEvent) => {
+  debugRunner.resetSession();
+};

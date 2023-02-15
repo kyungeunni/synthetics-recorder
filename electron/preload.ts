@@ -68,6 +68,9 @@ const electronAPI: IElectronAPI = {
   resumeDebug: async params => {
     return ipcRenderer.invoke('resume-debug', params);
   },
+  resetDebug: async () => {
+    ipcRenderer.invoke('reset-debug');
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

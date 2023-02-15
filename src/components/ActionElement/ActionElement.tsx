@@ -37,7 +37,7 @@ import { Behavior } from './Behavior';
 import { ExtraActions } from './ExtraActions';
 import { NewStepDividerButton } from './NewStepDividerButton';
 
-const ActionAccordion = styled(EuiAccordion)<{ isDragOver: boolean }>`
+const ActionAccordion = styled(EuiAccordion)<{ isDragOver: boolean; breakpointFocused: boolean }>`
   padding: 8px 0px;
   .euiAccordion__triggerWrapper {
     border-top-left-radius: ${props => props.theme.border.radius.medium};
@@ -45,6 +45,9 @@ const ActionAccordion = styled(EuiAccordion)<{ isDragOver: boolean }>`
     border: ${props => props.theme.border.thin};
     padding: 12px;
     background-color: ${props => props.theme.colors.emptyShade};
+    ${({ breakpointFocused }) => {
+      return breakpointFocused === true ? 'background-color: #90c1ff78;' : '';
+    }}
   }
 
   border-bottom: ${({ isDragOver, theme }) =>
@@ -86,6 +89,7 @@ interface IActionElement {
   stepIndex: number;
   testStatus?: ResultCategory;
   breakpointEnabled?: boolean;
+  breakpointFocused?: boolean;
 }
 
 function ActionComponent({
@@ -96,6 +100,7 @@ function ActionComponent({
   stepIndex,
   testStatus,
   breakpointEnabled,
+  breakpointFocused,
 }: IActionElement) {
   const { onDeleteAction, onUpdateAction, onSetActionIsOpen } = useContext(StepsContext);
   const isAssertion = actionContext.action.isAssert;
@@ -106,6 +111,7 @@ function ActionComponent({
     },
     [actionIndex, stepIndex, onSetActionIsOpen]
   );
+
   const close = () => setIsOpen(false);
   const { isDragOver, onDropActions, splitStepAtAction } = useDrop(stepIndex, actionIndex);
 
@@ -133,6 +139,7 @@ function ActionComponent({
       </EuiFlexItem>
       <Behavior isAssert={isAssertion} omitBorder={isLast}>
         <ActionAccordion
+          breakpointFocused={breakpointFocused ?? false}
           isDragOver={isDragOver}
           arrowDisplay="none"
           buttonProps={{ style: { display: 'none' } }}
@@ -158,6 +165,7 @@ function ActionComponent({
               actionContext={actionContext}
               stepIndex={stepIndex}
               breakpointEnabled={breakpointEnabled}
+              breakpointFocused={breakpointFocused}
             />
           }
         >

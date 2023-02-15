@@ -94,6 +94,7 @@ export default function App() {
     const removeListener = electronAPI.addActionGeneratedListener(listener);
     // add import listener
     electronAPI.addImportScriptListener(recordingContextUtils.importListener);
+    syntDebugUtils.resetDebug();
 
     return removeListener;
   }, [electronAPI, setSteps]);
@@ -137,6 +138,7 @@ export default function App() {
                             key={`step-separator-${index + 1}`}
                             step={step}
                             breakpoints={breakpoints}
+                            pausedAt={syntDebugUtils.pausedAt}
                           />
                         ))}
                         <TestResult />

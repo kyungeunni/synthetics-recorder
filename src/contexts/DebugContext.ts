@@ -35,15 +35,19 @@ async function notImplementedAsync() {
 export interface IDebugContext {
   isDebugInProgress: boolean;
   debugPaused: boolean;
+  pausedAt: string | null;
   setIsDebugInProgress: Setter<boolean>;
   startDebug: () => Promise<void>;
   resumeDebug: () => Promise<void>;
+  resetDebug: () => Promise<void>;
 }
 
 export const DebugContext = createContext<IDebugContext>({
   isDebugInProgress: false,
   debugPaused: false,
+  pausedAt: null,
   setIsDebugInProgress: notImplemented,
   startDebug: notImplementedAsync,
   resumeDebug: notImplementedAsync,
+  resetDebug: notImplementedAsync,
 });

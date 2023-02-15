@@ -39,6 +39,7 @@ export function getMockElectronApi(overrides?: Partial<IElectronAPI>): IElectron
     addImportScriptListener: jest.fn(),
     startDebug: jest.fn(),
     resumeDebug: jest.fn(),
+    resetDebug: jest.fn(),
     ...overrides,
   };
 }

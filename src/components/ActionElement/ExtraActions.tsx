@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { EuiFlexGroup, EuiFlexItem, EuiIcon } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiIcon, EuiToken } from '@elastic/eui';
 import React, { useContext, useState } from 'react';
 import { RecordingStatus } from '../../common/types';
 import { ActionContext } from '../../../common/types';
@@ -40,6 +40,7 @@ interface IExtraActions {
   actionContext: ActionContext;
   stepIndex: number;
   breakpointEnabled?: boolean;
+  breakpointFocused?: boolean;
 }
 
 export function ExtraActions({
@@ -50,6 +51,7 @@ export function ExtraActions({
   actionContext,
   stepIndex,
   breakpointEnabled,
+  breakpointFocused,
 }: IExtraActions) {
   const [isSettingsPopoverOpen, setIsSettingsPopoverOpen] = useState(false);
   const { onDeleteAction, onSoftDeleteAction, onInsertAction, onToggleBreakpoint } =
@@ -72,7 +74,12 @@ export function ExtraActions({
         <EuiFlexGroup>
           {breakpointEnabled ? (
             <EuiFlexItem grow={false} style={{ marginLeft: 5, marginRight: -8 }}>
-              <EuiIcon aria-label="breakpoint" type="annotation" color="red" />
+              <EuiToken
+                aria-label="breakpoint"
+                iconType="tokenTag"
+                color="red"
+                fill={breakpointFocused ? 'dark' : 'none'}
+              />
             </EuiFlexItem>
           ) : (
             ''
@@ -96,26 +103,6 @@ export function ExtraActions({
           isAssertion={actionContext.action.isAssert === true}
           isRecording={recordingStatus !== RecordingStatus.NotRecording}
           isVisible={areControlsVisible || isSettingsPopoverOpen}
-          onAddAssertion={settingsHandler(() => {
-            onInsertAction(
-              {
-                ...actionContext,
-                action: {
-                  ...actionContext.action,
-                  name: 'assert',
-                  selector: actionContext.action.selector || '',
-                  command: 'isVisible',
-                  value: actionContext.action.value || undefined,
-                  signals: [],
-                  isAssert: true,
-                },
-                isOpen: true,
-                modified: false,
-              },
-              stepIndex,
-              actionIndex + 1
-            );
-          })}
           onAddAction={(actionName: string) => {
             if (isSettingsPopoverOpen) {
               setIsSettingsPopoverOpen(false);

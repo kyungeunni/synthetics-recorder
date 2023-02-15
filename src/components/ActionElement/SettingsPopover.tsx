@@ -32,7 +32,6 @@ interface ISettingsPopover {
   isRecording: boolean;
   isVisible: boolean;
   isOpen: boolean;
-  onAddAssertion: () => void;
   onAddAction: (actionName: string) => void;
   onDelete: () => void;
   onSoftDelete: () => void;
@@ -53,6 +52,7 @@ const actionNames = [
   'press',
   'navigate',
   'select',
+  'assert',
 ];
 
 function createDeleteButton(
@@ -81,7 +81,6 @@ export function SettingsPopover({
   isRecording,
   isOpen,
   setIsOpen,
-  onAddAssertion,
   onAddAction,
   onDelete,
   onSoftDelete,
@@ -113,11 +112,6 @@ export function SettingsPopover({
                 icon: 'dot',
                 name: `${breakpointEnabled ? 'Remove' : 'Add'} Breakpoint`,
                 onClick: onToggleBreakpoint,
-              },
-              {
-                icon: 'plusInCircle',
-                name: 'Add assertion',
-                onClick: onAddAssertion,
               },
               {
                 icon: 'plusInCircle',

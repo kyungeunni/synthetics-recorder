@@ -28,8 +28,8 @@ import { IDebugContext } from '../contexts/DebugContext';
 import { CommunicationContext } from '../contexts/CommunicationContext';
 
 export function useSyntheticsDebug(steps: Steps, breakpoints: Set<string>): IDebugContext {
-  const [isDebugInProgress, setIsDebugInProgress] = useState(false);
-  const [pausedIndex, setPausedIndex] = useState(null);
+  const [isDebugInProgress, setIsDebugInProgress] = useState<boolean>(false);
+  const [pausedIndex, setPausedIndex] = useState<string | null>(null);
   const { electronAPI } = useContext(CommunicationContext);
 
   const startDebug = useCallback(async () => {
@@ -77,8 +77,10 @@ export function useSyntheticsDebug(steps: Steps, breakpoints: Set<string>): IDeb
   return {
     isDebugInProgress,
     debugPaused: !!pausedIndex,
+    pausedAt: pausedIndex,
     startDebug,
     resumeDebug,
+    resetDebug: async () => electronAPI.resetDebug(),
     setIsDebugInProgress,
   };
 }

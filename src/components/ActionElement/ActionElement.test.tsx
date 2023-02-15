@@ -234,7 +234,12 @@ describe('ActionElement', () => {
       isOpen: true,
     });
     const { getByText, getByTestId } = render(
-      <ActionElement actionIndex={actionIndex} actionContext={action} stepIndex={stepIndex} />,
+      <ActionElement
+        actionIndex={actionIndex}
+        actionContext={action}
+        stepIndex={stepIndex}
+        breakpointFocused={false}
+      />,
       {
         contextOverrides: {
           steps: {
