@@ -26,7 +26,7 @@ import type { MenuItemConstructorOptions } from 'electron';
 import path from 'path';
 import { BrowserWindow, shell } from 'electron';
 import isDev from 'electron-is-dev';
-import { importScript } from './api';
+import { importScript, IMPORT_JSON_TYPE } from './api';
 
 export function buildMenu(appName: string): MenuItemConstructorOptions[] {
   const isMac = process.platform === 'darwin';
@@ -37,8 +37,12 @@ export function buildMenu(appName: string): MenuItemConstructorOptions[] {
         isMac ? { role: 'close' } : { role: 'quit' },
         {
           label: 'Open...',
+          click: () => importScript(IMPORT_JSON_TYPE.SYNTHETICS),
           accelerator: 'CommandOrControl+O',
-          click: () => importScript(),
+        },
+        {
+          label: 'Open Chrome DevTools Recorder...',
+          click: () => importScript(IMPORT_JSON_TYPE.CHROME_RECORDER),
         },
       ],
     },

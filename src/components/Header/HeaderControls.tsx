@@ -124,6 +124,16 @@ export function HeaderControls({ setIsCodeFlyoutVisible }: IHeaderControls) {
           </ControlButton>
         </EuiFlexItem>
       )}
+      {breakpoints.size > 0 && (
+        <DebugButton
+          isDisabled={
+            isDebugInProgress || steps.length === 0 || recordingStatus === RecordingStatus.Recording
+          }
+          onDebug={onDebug}
+          onResume={onResume}
+          isPaused={debugPaused}
+        />
+      )}
       <EuiFlexItem
         grow={
           recordingStatus === RecordingStatus.Recording ||
@@ -135,16 +145,6 @@ export function HeaderControls({ setIsCodeFlyoutVisible }: IHeaderControls) {
       <EuiFlexItem grow={false}>
         <EuiFlexGroup gutterSize="m">
           <TestButtonDivider>
-            <DebugButton
-              isDisabled={
-                isDebugInProgress ||
-                steps.length === 0 ||
-                recordingStatus === RecordingStatus.Recording
-              }
-              onDebug={onDebug}
-              onResume={onResume}
-              isPaused={debugPaused}
-            />
             <TestButton
               isDisabled={
                 isTestInProgress ||

@@ -46,13 +46,13 @@ export function DebugButton({ isDisabled, onDebug, onResume, isPaused }: Props) 
       isDisabled={isDisabled}
       onClick={isPaused ? onResume : onDebug}
     >
-      {isPaused ? 'Resume' : 'Debug'}
+      {isPaused ? 'Resume' : 'Replay'}
     </ControlButton>
   );
 
   if (isDisabled) {
     return (
-      <EuiToolTip content="Record a step in order to run a Debug" delay="long">
+      <EuiToolTip content="Record a step in order to run a Replay" delay="long">
         {button}
       </EuiToolTip>
     );

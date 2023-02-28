@@ -25,7 +25,12 @@ import { dialog, IpcMainInvokeEvent } from 'electron';
 import path from 'path';
 import { writeFile, readFile } from 'fs/promises';
 import { getMainWindow } from '../util';
+import { transformToSyntheticsJson, parseRecordingContent } from 'puppeteer-replay-to-synthetics';
 
+export enum IMPORT_JSON_TYPE {
+  SYNTHETICS = 'synthetics',
+  CHROME_RECORDER = 'chrome-recorder',
+}
 export async function onExportScript(_event: IpcMainInvokeEvent, code: string, isJson: boolean) {
   const { filePath, canceled } = await dialog.showSaveDialog(getMainWindow(), {
     filters: [
@@ -49,7 +54,7 @@ export async function onExportScript(_event: IpcMainInvokeEvent, code: string, i
   return false;
 }
 
-export async function importScript() {
+export async function importScript(type: IMPORT_JSON_TYPE) {
   const window = getMainWindow();
   const { canceled, filePaths } = await dialog.showOpenDialog(window, {
     filters: [{ name: 'JSON', extensions: ['json'] }],
@@ -63,11 +68,14 @@ export async function importScript() {
   const [pathToFile] = filePaths;
   try {
     const contents = await readFile(pathToFile, { encoding: 'utf-8' });
-    const parsed = JSON.parse(contents);
+    const parsed =
+      type === IMPORT_JSON_TYPE.CHROME_RECORDER
+        ? transformToSyntheticsJson(parseRecordingContent(contents))
+        : JSON.parse(contents);
 
     // TODO: deliver parsed script to StepsContext.tsx :thinking-face:
     getMainWindow().webContents.send('import-script', parsed);
   } catch (err) {
-    throw new Error(`Failed to import file ${path.basename(pathToFile)}`);
+    throw new Error(`Failed to import file ${path.basename(pathToFile || '')} (type: ${type})`);
   }
 }
