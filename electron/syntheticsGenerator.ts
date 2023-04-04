@@ -241,7 +241,7 @@ export class SyntheticsGenerator extends PlaywrightGenerator.JavaScriptLanguageG
         // original code uses the full URL including query strings which often contains randomly generated value(cashbusting)
         // when replaying the script it will fail so we will check only baseurl and path
         const url = new URL(signals.assertNavigation.url);
-        formatter.add(`expect(${pageAlias}.url()).toContain(${quote(url.origin + url.pathname)});`);
+        formatter.add(`await ${pageAlias}.waitForURL(${quote(url.origin + url.pathname + '*')});`);
       }
     } else if (action.command) {
       formatter.add(toAssertCall(pageAlias, action));
